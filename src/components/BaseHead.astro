@@ -1,0 +1,77 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+}
+
+const { title, description, image = "/og.png" } = Astro.props;
+
+---
+
+<meta charset="utf-8" />
+
+<!--  Theme init (keep this) -->
+<script is:inline>
+(() => {
+  const root = document.documentElement;
+  let theme = 'light';
+
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || saved === 'light') theme = saved;
+    else if (matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+  } catch {}
+
+  root.setAttribute('data-theme', theme);
+})();
+</script>
+
+<!-- Minimal CSS variables -->
+<style is:inline>
+:root {
+  --color-bg: #ffffff;
+  --color-bg-header: rgba(255,255,255,0.85);
+  --color-text-main: #1a1a1a;
+  --color-text-muted: #555;
+  --color-accent: #003366;
+  --color-border: #eaeaea;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-bg-header: rgba(15,23,42,0.8);
+  --color-text-main: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-accent: #60a5fa;
+  --color-border: #334155;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text-main);
+}
+</style>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+
+
+<title>{title}</title>
+<meta name="description" content={description} />
+
+<!--  Open Graph -->
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:image" content={image} />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />

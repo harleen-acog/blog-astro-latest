@@ -1,0 +1,210 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import { getUsers, getUserByUsername } from "../../../../lib/queries/users";
+import { getPostsByUser } from "../../../../lib/queries/posts";
+import Header from "../../../../components/Header.astro";
+
+export async function getStaticPaths() {
+  const users = getUsers();
+
+  return users.map((user) => ({
+    params: { username: user.username },
+  }));
+}
+
+const { username } = Astro.params;
+const user = getUserByUsername(username);
+
+if (!user) throw new Error("User not found");
+
+const posts = getPostsByUser(user.id);
+---
+
+<Layout title={`${user.name} | Blog`} description={`Posts by ${user.name}`}>
+  <Header user={user} slot="Header"/>
+
+  <section class="blog-page">
+    
+    <!-- Header -->
+    <header class="blog-header">
+      <div class="header-top">
+        <div>
+          <h1>{user.name}'s Blog</h1>
+          <p id="result-count">
+            {posts.length} post{posts.length !== 1 && 's'}
+          </p>
+        </div>
+
+        <a href={`/create-post`} class="create-btn">
+          + New Post
+        </a>
+      </div>
+
+      <!-- Search -->
+      <input
+        id="search"
+        type="text"
+        placeholder="Search posts..."
+        class="search-input"
+      />
+    </header>
+
+    <!-- Posts -->
+    {posts.length === 0 ? (
+      <p class="empty">No posts yet.</p>
+    ) : (
+      <>
+        <div class="posts-grid" id="posts">
+          {posts.map((post) => (
+            <a
+              href={`/users/${username}/blog/${post.slug}`}
+              class="post-card"
+              data-title={post.title.toLowerCase()}
+              data-excerpt={(post.excerpt || '').toLowerCase()}
+            >
+              <h3>{post.title}</h3>
+              {post.excerpt && <p>{post.excerpt}</p>}
+            </a>
+          ))}
+        </div>
+
+        <p class="empty" id="empty-state" style="display:none;">
+          No posts match your search.
+        </p>
+      </>
+    )}
+    
+  </section>
+</Layout>
+
+<script>
+  const searchInput = document.getElementById("search");
+  const posts = document.querySelectorAll(".post-card");
+  const emptyState = document.getElementById("empty-state");
+  const resultCount = document.getElementById("result-count");
+
+  searchInput?.addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase().trim();
+
+    let visibleCount = 0;
+
+    posts.forEach((post) => {
+      const title = post.dataset.title || "";
+      const excerpt = post.dataset.excerpt || "";
+
+      const match =
+        title.includes(query) || excerpt.includes(query);
+
+      post.style.display = match ? "block" : "none";
+
+      if (match) visibleCount++;
+    });
+
+    // Update result count
+    if (resultCount) {
+      resultCount.textContent = `${visibleCount} post${visibleCount !== 1 ? "s" : ""}`;
+    }
+
+    // Toggle empty state
+    if (emptyState) {
+      emptyState.style.display = visibleCount === 0 ? "block" : "none";
+    }
+  });
+</script>
+
+<style>
+.blog-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+/* Header */
+.blog-header {
+  margin-bottom: 2.5rem;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.blog-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.blog-header p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Search */
+.search-input {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-offset);
+  color: var(--color-text-main);
+  font-size: 0.95rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* Create button */
+.create-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Grid */
+.posts-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Card */
+.post-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg-offset);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.post-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.post-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-main);
+}
+
+.post-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Empty */
+.empty {
+  color: var(--color-text-muted);
+  margin-top: 1rem;
+}
+</style>

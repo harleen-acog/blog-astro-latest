@@ -1,0 +1,16 @@
+---
+import { getCurrentUser } from "../lib/auth";
+
+const user = getCurrentUser(Astro.cookies);
+---
+
+{user ? (
+  <>
+    <span>Hello {user.name}</span>
+    <form method="POST" action="/api/logout">
+      <button>Logout</button>
+    </form>
+  </>
+) : (
+  <a href="/login">Login</a>
+)}

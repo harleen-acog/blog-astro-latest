@@ -1,0 +1,31 @@
+---
+import { getUserByUsername } from "../../../lib/queries/users";
+import { getPostsByUser } from "../../../lib/queries/posts";
+import { getUsers } from "../../../lib/queries/users";
+
+import UserLayout from "../../../layouts/UserLayout.astro";
+import Hero from "../../../components/user/Hero.astro";
+import BlogPreview from "../../../components/user/BlogPreview.astro";
+import "../../../styles/global.css"
+
+export async function getStaticPaths() {
+  const users = getUsers();
+  return users.map((user) => ({
+    params: { username: user.username },
+  }));
+}
+
+const { username } = Astro.params;
+
+const user = getUserByUsername(username);
+const posts = getPostsByUser(user.id).slice(0, 3);
+---
+
+<UserLayout user={user}>
+
+  <Hero user={user} />
+
+  <div class="grid-2" style="gap: 4rem;">
+    <BlogPreview posts={posts} username={username} />
+  </div>
+</UserLayout>

@@ -1,0 +1,63 @@
+---
+const { user } = Astro.props;
+---
+
+<header>
+  <nav>
+    <h2>
+      <a href={`/users/${user.username}`}>
+        {user.name}
+      </a>
+    </h2>
+
+    <div class="internal-links">
+      <a href={`/`}>Home</a>
+      <a href={`/users/${user.username}/blog`}>Blog</a>
+      <a href="/users">Team</a>
+    </div>
+  </nav>
+</header>
+
+<style>
+header {
+  padding: 0 1em;
+  background-color: var(--color-bg-header);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  height: 4.5rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.3em;
+}
+
+h2 a {
+  text-decoration: none;
+  color: var(--color-text-main);
+}
+
+.internal-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.internal-links a {
+  text-decoration: none;
+  color: var(--color-text-main);
+  font-weight: 500;
+}
+
+.internal-links a:hover {
+  color: var(--color-accent);
+}
+</style>

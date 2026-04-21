@@ -1,0 +1,237 @@
+---
+import Layout from "../layouts/Layout.astro"; // or your main layout
+import { getUsers } from "../lib/queries/users";
+import { getPostsByUser } from "../lib/queries/posts";
+import { url } from "../utils/paths";
+import "../styles/global.css";
+import { formatDate } from "../lib/dateFormat";
+
+const users = getUsers();
+
+// Collect all posts across users
+const allPosts = users.flatMap((user) =>
+  getPostsByUser(user.id).map((post) => ({
+    ...post,
+    username: user.username,
+  }))
+);
+
+// Sort latest first
+allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+// Optional: limit
+const latestPosts = allPosts.slice(0, 6);
+---
+
+<Layout title="Home">
+
+  <section class="hero" slot="Hero-Section">
+  <div class="hero-overlay">
+    <h1>Insights & Ideas</h1>
+<p>Thoughts on development, design, and building things that matter.</p>
+  </div>
+</section>
+
+  <!-- Latest Posts -->
+  <section class="section">
+    <h2>Latest Posts</h2>
+
+    {latestPosts.length === 0 ? (
+      <p>No posts yet.</p>
+    ) : (
+      <div class="post-grid">
+        {latestPosts.map((post) => (
+          <article class="post-card">
+            <h3>
+              <a href={url(`users/${post.username}/blog/${post.slug}`)}>
+                {post.title}
+              </a>
+            </h3>
+
+            <p class="meta">
+              {formatDate(post.date)}
+            </p>
+
+            {post.excerpt && <p>{post.excerpt}</p>}
+          </article>
+        ))}
+      </div>
+    )}
+  </section>
+
+  <!-- Users -->
+ <section class="section">
+  <div class="section-header">
+    <h2>Authors</h2>
+    <a href={url("/users")} class="view-all">
+      View all →
+    </a>
+  </div>
+
+  <div class="user-grid">
+    {users.map((user) => (
+      <div class="user-card">
+        
+        <!-- Avatar -->
+        <div class="avatar">
+          <img src={`https://i.pravatar.cc/150?u=${user.id}`} alt={user.name} />
+        </div>
+
+        <!-- Info -->
+        <div class="user-info">
+          <h3>{user.name}</h3>
+          <p class="username">@{user.username}</p>
+          <p class="role">{user.role}</p>
+
+          <p class="about">
+            {user.about.slice(0, 90)}...
+          </p>
+
+          <a
+            href={url(`users/${user.username}/blog/`)}
+            class="user-link"
+          >
+            View posts →
+          </a>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+</Layout>
+
+<style>
+
+.hero {
+  position: relative;
+  height:27rem;
+  text-align: center;
+  background-image: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  background: rgba(0, 0, 0, 0.58);
+  color: white;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  height:inherit;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  margin-bottom: 0.75rem;
+  color:var(--color-bg)
+}
+
+.hero p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  color:var(--color-bg-offset);
+}
+
+.section {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.post-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.post-card {
+  border: 1px solid var(--color-border);
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: var(--color-bg-offset);
+  box-shadow: 1px 3px 6px #dfdfdf;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.view-all {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.view-all:hover {
+  text-decoration: underline;
+}
+
+.user-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.user-card {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: var(--color-bg-offset);
+  transition: all 0.2s ease;
+  display: flex;
+  gap: 1rem;
+}
+
+.user-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-accent);
+}
+
+.avatar img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.username {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.role {
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+}
+
+.about {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.user-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-accent);
+}
+
+</style>

@@ -1,0 +1,81 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import "../styles/global.css";
+import { getCurrentUser } from "../lib/auth";
+const { post, user, html } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <BaseHead title={post.title} description={post.description} />
+  </head>
+
+  <body>
+    <Header user={user} />
+
+    <main class="container">
+      <article class="blog-post">
+        <div class="title">
+          <!-- {
+            user && user.id === post.author_id && (
+              <a href={`/posts/${post.id}/edit`}>Edit</a>
+            )
+          } -->
+
+          <div class="date">
+            <FormattedDate date={post.created_at} />
+          </div>
+        </div>
+        
+        <div class="prose" set:html={html} />
+      </article>
+    </main>
+
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .title {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .title h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .date {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .prose {
+    line-height: 1.7;
+    color: var(--color-text-main);
+  }
+
+  .prose p {
+    margin-bottom: 1rem;
+  }
+
+  .prose h2,
+  .prose h3 {
+    margin-top: 2rem;
+  }
+
+  .prose img {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+</style>

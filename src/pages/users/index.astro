@@ -1,0 +1,83 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getUsers } from "../../lib/queries/users";
+import { url } from "../../utils/paths";
+
+const users = getUsers();
+---
+
+<Layout title="Team">
+
+  <section class="section">
+    <h1>Our Team</h1>
+    <p>Meet the people behind the work.</p>
+
+    <div class="user-grid">
+      {users.map((user) => (
+        <a href={url(`users/${user.username}`)} class="user-card">
+          <div class="avatar">
+            <img src={`https://i.pravatar.cc/150?u=${user.id}`} alt={user.name} />
+          </div>
+
+          <h3>{user.name}</h3>
+          <p class="role">{user.role}</p>
+
+          <p class="about">
+            {user.about.slice(0, 120)}...
+          </p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+.section {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.user-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  box-shadow: 1px 3px 6px #dfdfdf;
+  background-color:var(--color-bg-offset);
+}
+
+.user-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-accent);
+}
+
+.avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.role {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.about {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+</style>
