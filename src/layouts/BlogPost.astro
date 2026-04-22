@@ -7,7 +7,6 @@ import "../styles/global.css";
 const { post, username, slug } = Astro.props;
 
 const user = { name: username, username };
-
 ---
 
 <html lang="en">
@@ -19,30 +18,39 @@ const user = { name: username, username };
     <Header user={user} />
 
     <main class="container">
-      <article class="blog-post"
-      data-pagefind-body
+      <article
+        class="blog-post"
+        data-pagefind-body
         data-pagefind-meta={`title:${post.title}`}
       >
         <div class="title">
-          
-
           <div class="date">
             {post.date.toLocaleDateString()}
           </div>
           <h1>{post.title}</h1>
           <p class="author-line">
-            by <a href={`/${username}`}>{username}</a>
+            by{" "}
+            {
+              post.contributors.map((c, i) => (
+                <>
+                  <a href={`/${c}`}>{c}</a>
+                  {i < post.contributors.length - 1 && " | "}
+                </>
+              ))
+            }
           </p>
-          {post.tags.length > 0 && (
-            <div class="tags">
-              {post.tags.map((tag: string) => (
-                <span class="tag">{tag}</span>
-              ))}
-            </div>
-          )}
+          {
+            post.tags.length > 0 && (
+              <div class="tags">
+                {post.tags.map((tag: string) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+            )
+          }
         </div>
         <div class="prose">
-          <slot /> 
+          <slot />
         </div>
       </article>
     </main>
@@ -71,7 +79,7 @@ const user = { name: username, username };
   .date {
     color: var(--color-text-muted);
     font-size: 0.9rem;
-    margin-bottom:1rem;
+    margin-bottom: 1rem;
   }
 
   .prose {
