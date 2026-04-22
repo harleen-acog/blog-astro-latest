@@ -1,1 +1,1 @@
-A	src/content/posts/blog.md
+A	src/content/posts/power-of-learning-in-public.md
