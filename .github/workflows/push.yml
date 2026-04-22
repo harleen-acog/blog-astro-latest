@@ -1,0 +1,222 @@
+# .github/workflows/push.yml
+# Only triggers when markdown post files change
+# 1. Own folder / first time → setup + build
+# 2. Foreign folder          → revert + open issue for owner
+
+name: Push Handler
+
+env:
+  ADMINS: "harleen-acog"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/content/posts/**'   # only runs when post files change
+
+jobs:
+  # ──────────────────────────────────────
+  # JOB 1: Check who owns the changed files
+  # ──────────────────────────────────────
+  ownership-check:
+    name: Ownership Check
+    runs-on: ubuntu-latest
+    outputs:
+      is_clean: ${{ steps.check.outputs.is_clean }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed post files
+        run: |
+          git diff --name-only HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
+          cat changed.txt
+
+      - name: Check ownership
+        id: check
+        run: |
+          ACTOR="${{ github.actor }}"
+          COMMIT_SHA="${{ github.sha }}"
+          FOREIGN_FILES=""
+          IS_CLEAN=true
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            [[ "$file" != src/content/posts/* ]] && continue
+
+            DEPTH=$(echo "$file" | tr '/' '\n' | wc -l)
+            FOLDER_USER=$(echo "$file" | cut -d'/' -f4)
+
+            # Invalid path depth
+            if [ "$DEPTH" -ne 5 ]; then
+              echo "❌ Invalid path: $file"
+              echo "   Must be: src/content/posts/{github-username}/{post}.md"
+              FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (invalid path)"
+              IS_CLEAN=false
+              continue
+            fi
+
+            # Foreign folder
+            if [ "$FOLDER_USER" != "$ACTOR" ]; then
+              echo "  Foreign: $file (owner: @${FOLDER_USER})"
+              FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (belongs to @${FOLDER_USER})"
+              IS_CLEAN=false
+            else
+              echo "Own: $file"
+            fi
+
+          done < changed.txt
+
+          echo "is_clean=$IS_CLEAN" >> $GITHUB_OUTPUT
+
+          # Foreign files — revert + open issue
+          if [ "$IS_CLEAN" = false ]; then
+            echo "── Reverting commit ──"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git revert --no-edit HEAD
+            git push origin main
+
+            gh issue create \
+              --title "🔔 @${ACTOR} wants to edit protected content" \
+              --body "### @${ACTOR} pushed changes to another user's folder
+
+**Pushed by:** @${ACTOR}
+**Commit:** [\`${COMMIT_SHA:0:7}\`](https://github.com/${{ github.repository }}/commit/${COMMIT_SHA})
+
+**Files needing approval:**
+$(echo -e "$FOREIGN_FILES")
+
+---
+
+The commit has been **reverted** and is pending approval.
+
+**To approve** (folder owner or @${ADMINS}):
+Comment \`/approve\`
+
+**To reject:**
+Comment \`/reject\`
+
+<!-- meta: commit=${COMMIT_SHA} pusher=${ACTOR} -->" \
+              --label "needs-approval" \
+              --repo "${{ github.repository }}"
+
+            echo " Reverted + issue opened"
+          fi
+
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ──────────────────────────────────────
+  # JOB 2: Setup user
+  # folder + profile + CODEOWNERS
+  # Only runs if all files are own/new
+  # ──────────────────────────────────────
+  setup-user:
+    name: Setup User
+    runs-on: ubuntu-latest
+    needs: ownership-check
+    if: needs.ownership-check.outputs.is_clean == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed post files
+        run: |
+          git diff --name-only HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
+
+      - name: Setup folder, profile, CODEOWNERS
+        run: |
+          ACTOR="${{ github.actor }}"
+          USER_FOLDER="src/content/posts/${ACTOR}"
+          AUTHORS_DIR="src/content/authors"
+          CODEOWNERS=".github/CODEOWNERS"
+          CHANGED=false
+
+          mkdir -p "$AUTHORS_DIR"
+
+          # Create folder + move file if first time user
+          if [ ! -d "$USER_FOLDER" ]; then
+            echo "📁 New user — creating folder for @${ACTOR}"
+            mkdir -p "$USER_FOLDER"
+            CHANGED=true
+
+            # Move any misplaced files into correct folder
+            while IFS= read -r file; do
+              [ -z "$file" ] && continue
+              [[ "$file" != src/content/posts/* ]] && continue
+              FILENAME=$(basename "$file")
+              if [ -f "$file" ] && [ "$file" != "${USER_FOLDER}/${FILENAME}" ]; then
+                echo "📦 Moving $file → ${USER_FOLDER}/${FILENAME}"
+                mv "$file" "${USER_FOLDER}/${FILENAME}"
+                CHANGED=true
+              fi
+            done < changed.txt
+          fi
+
+          # Auto-create profile from GitHub API
+          PROFILE_FILE="${AUTHORS_DIR}/${ACTOR}.json"
+          if [ ! -f "$PROFILE_FILE" ]; then
+            echo "👤 Fetching GitHub profile for @${ACTOR}..."
+            DATA=$(curl -s \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/users/${ACTOR}")
+
+            cat > "$PROFILE_FILE" <<EOF
+{
+  "name": $(echo "$DATA" | jq '.name // .login'),
+  "login": $(echo "$DATA" | jq '.login'),
+  "avatar_url": $(echo "$DATA" | jq '.avatar_url'),
+  "bio": $(echo "$DATA" | jq '.bio // ""')
+}
+EOF
+            echo "✅ Profile created"
+            CHANGED=true
+          fi
+
+          # Add to CODEOWNERS if missing
+          if ! grep -q "@${ACTOR}" "$CODEOWNERS" 2>/dev/null; then
+            echo "src/content/posts/${ACTOR}/*    @${ACTOR}" >> "$CODEOWNERS"
+            echo "✅ CODEOWNERS updated"
+            CHANGED=true
+          fi
+
+          # Commit if anything changed
+          if [ "$CHANGED" = true ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git diff --staged --quiet || git commit -m "auto: setup @${ACTOR} [skip ci]"
+            git push
+          fi
+
+  # ──────────────────────────────────────
+  # JOB 3: Build
+  # Validates frontmatter via Zod schema
+  # Bad field → build fails → logs show exactly what's wrong
+  # ──────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: setup-user
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npx astro build
