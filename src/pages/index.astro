@@ -3,137 +3,142 @@ import Layout from "../layouts/Layout.astro"; // or your main layout
 import { url } from "../utils/paths";
 import "../styles/global.css";
 import { formatDate } from "../lib/dateFormat";
-import Search from '../components/Search.astro';
+import Search from "../components/Search.astro";
 import { getCollection } from "astro:content";
 
-//exclude the drafts 
-const allPosts = await getCollection('posts',({data}) => !data.draft)
-const latestPosts = allPosts.map((entry)=>{
-  const [username, slug] = entry.id.split('/');
-  return{
-    username,
-    slug,
-    title:entry.data.title,
-    description:entry.data.description,
-    date: entry.data.date,
+//exclude the drafts
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+const latestPosts = allPosts
+  .map((entry) => {
+    const [username, slug] = entry.id.split("/");
+    return {
+      username,
+      slug,
+      title: entry.data.title,
+      description: entry.data.description,
+      date: entry.data.date,
       tags: entry.data.tags,
-  }
-}).sort((a,b)=>b.date.valueOf() - a.date.valueOf()).slice(0,20)
+    };
+  })
+  .sort((a, b) => b.date.valueOf() - a.date.valueOf())
+  .slice(0, 20);
 
 // Optional: limit
 ---
 
 <Layout title="Home">
-
   <section class="hero" slot="Hero-Section">
-  <div class="hero-overlay">
-    <h1>Insights & Ideas</h1>
-<p>Thoughts on development, design, and building things that matter.</p>
-  </div>
-</section>
+    <div class="hero-overlay">
+      <h1>Insights & Ideas</h1>
+      <p>Thoughts on development, design, and building things that matter.</p>
+    </div>
+  </section>
 
   <!-- Latest Posts -->
   <section class="section">
-    <h2>Latest Posts</h2>
+    <div class="section-header">
+      <h2>Latest Posts</h2>
+      <a href="/authors" class="view-all">See Authors →</a>
+    </div>
+    <Search />
 
-    {latestPosts.length === 0 ? (
-      <p>No posts yet.</p>
-    ) : (
-      <div class="post-grid">
-        {latestPosts.map((post) => (
-          <article class="post-card">
-            <h3>
-              <a href={url(`${post.username}/blog/${post.slug}`)}>
-                {post.title}
-              </a>
-            </h3>
+    {
+      latestPosts.length === 0 ? (
+        <p>No posts yet.</p>
+      ) : (
+        <div class="post-grid">
+          {latestPosts.map((post) => (
+            <article class="post-card">
+              <h3>
+                <a href={url(`${post.username}/blog/${post.slug}`)}>
+                  {post.title}
+                </a>
+              </h3>
 
-            <p class="meta">
-              {`${post.username}  |  ${formatDate(post.date)} ` }
-            </p>
+              <p class="meta">
+                {`${post.username}  |  ${formatDate(post.date)} `}
+              </p>
 
-            {post.description && <p>{post.description}</p>}
-          </article>
-        ))}
-      </div>
-    )}
+              {post.description && <p>{post.description}</p>}
+            </article>
+          ))}
+        </div>
+      )
+    }
   </section>
-
 </Layout>
 
 <style>
+  .hero {
+    position: relative;
+    height: 27rem;
+    text-align: center;
+    background-image: url("https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+  }
 
-.hero {
-  position: relative;
-  height:27rem;
-  text-align: center;
-  background-image: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-  overflow: hidden;
-}
+  .hero-overlay {
+    background: rgba(0, 0, 0, 0.58);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    height: inherit;
+  }
 
-.hero-overlay {
-  background: rgba(0, 0, 0, 0.58);
-  color: white;
-  display:flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  height:inherit;
-}
+  .hero h1 {
+    font-size: 2.8rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-bg);
+  }
 
-.hero h1 {
-  font-size: 2.8rem;
-  margin-bottom: 0.75rem;
-  color:var(--color-bg)
-}
+  .hero p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    color: var(--color-bg-offset);
+  }
 
-.hero p {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  color:var(--color-bg-offset);
-}
+  .section {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
 
-.section {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
+  .post-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
 
-.post-grid {
-  display: grid;
-  gap: 1.5rem;
-}
+  .post-card {
+    border: 1px solid var(--color-border);
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: var(--color-bg-offset);
+    box-shadow: 1px 3px 6px #dfdfdf;
+  }
 
-.post-card {
-  border: 1px solid var(--color-border);
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: var(--color-bg-offset);
-  box-shadow: 1px 3px 6px #dfdfdf;
-}
+  .meta {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
 
-.meta {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
+  .view-all {
+    font-size: 1rem;
+    color: var(--color-accent);
+    text-decoration: none;
+  }
 
-.view-all {
-  font-size: 0.9rem;
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.view-all:hover {
-  text-decoration: underline;
-}
-
+  .view-all:hover {
+    text-decoration: underline;
+  }
 </style>

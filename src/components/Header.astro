@@ -1,5 +1,6 @@
 ---
 const { user } = Astro.props;
+import Search from "./Search.astro";
 ---
 
 <header data-pagefind-ignore>
@@ -9,7 +10,7 @@ const { user } = Astro.props;
         {user.name}
       </a>
     </h2>
-
+    
     <div class="internal-links">
       <a href={`/`}>Home</a>
       <a href={`/${user.username}/blog`}>Blog</a>

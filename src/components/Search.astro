@@ -9,24 +9,34 @@
 </div>
 
 <link href="/_pagefind/pagefind-ui.css" rel="stylesheet" />
-
 <script>
   window.addEventListener('DOMContentLoaded', () => {
-    // @ts-ignore — pagefind is a post-build artifact
-    import('/pagefind/pagefind-ui.js').then(({ PagefindUI }) => {
-      new PagefindUI({
-        element: '#search',
+    if (typeof window === "undefined") return;
+
+    
+    const script = document.createElement("script");
+    script.src = "/pagefind/pagefind-ui.js";
+    script.defer = true;
+
+    script.onload = () => {
+      // @ts-ignore
+      new window.PagefindUI({
+        element: "#search",
         showImages: false,
         excerptLength: 20,
         resetStyles: false,
       });
-    }).catch(() => {
-      // silently fail in dev mode — index doesn't exist yet
-      const el = document.getElementById('search');
+    };
+
+    script.onerror = () => {
+      const el = document.getElementById("search");
       if (el) {
-        el.innerHTML = '<p style="color:var(--color-text-muted);font-size:0.85rem;">Search available after build</p>';
+        el.innerHTML =
+          '<p style="color:var(--color-text-muted);font-size:0.85rem;">Search available after build</p>';
       }
-    });
+    };
+
+    document.body.appendChild(script);
   });
 </script>
 
