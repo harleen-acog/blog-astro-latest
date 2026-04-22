@@ -34,7 +34,6 @@ jobs:
           ACTOR="${{ github.actor }}"
           REPO="${{ github.repository }}"
 
-          FOREIGN_FILES=""
           IS_CLEAN=true
           AUTO_FIXED=false
 
@@ -46,21 +45,21 @@ jobs:
             FOLDER_USER=$(echo "$file" | cut -d'/' -f4)
             FILENAME=$(basename "$file")
 
-            # 🗑️ DELETE CASE
+            #  DELETE CASE
             if [ "$STATUS" = "D" ]; then
               if [ "$FOLDER_USER" = "$ACTOR" ] || [[ "$ADMINS" == *"$ACTOR"* ]]; then
-                echo "✅ Allowed delete: $file"
+                echo " Allowed delete: $file"
                 continue
               else
-                FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (delete not allowed)"
+                echo "Delete not allowed: $file"
                 IS_CLEAN=false
                 continue
               fi
             fi
 
-            # ⚠️ INVALID PATH → auto-fix
+            #  INVALID PATH → auto-fix (first-time user)
             if [ "$DEPTH" -ne 5 ]; then
-              echo "⚠️ Invalid path: $file"
+              echo " Invalid path: $file"
 
               CORRECT_DIR="src/content/posts/${ACTOR}"
               CORRECT_PATH="${CORRECT_DIR}/${FILENAME}"
@@ -72,20 +71,31 @@ jobs:
               continue
             fi
 
-            # ❌ FOREIGN FOLDER
+            #  FOREIGN EDIT → add contributor
             if [ "$FOLDER_USER" != "$ACTOR" ]; then
-              FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (belongs to @${FOLDER_USER})"
-              IS_CLEAN=false
+              echo " Foreign edit detected: $file"
+
+              # Add or update contributors field
+              if grep -q "^contributors:" "$file"; then
+                if ! grep -q "$ACTOR" "$file"; then
+                  sed -i "/^contributors:/ s/]$/, \"$ACTOR\"]/" "$file"
+                fi
+              else
+                sed -i "1,/^---$/ s/^---$/---\ncontributors: [\"$FOLDER_USER\", \"$ACTOR\"]/" "$file"
+              fi
+
+              AUTO_FIXED=true
+              continue
             fi
 
           done < changed.txt
 
-          # ✅ Auto-fix commit
+          #  Auto-fix commit (paths OR contributors)
           if [ "$AUTO_FIXED" = true ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            git commit -am "auto: fix post path for @${ACTOR}"
+            git commit -am "auto: fix post path / contributors for @${ACTOR}"
             git pull --rebase origin main
             git push origin main
 
@@ -94,26 +104,6 @@ jobs:
           fi
 
           echo "is_clean=$IS_CLEAN" >> $GITHUB_OUTPUT
-
-          # ❌ FOREIGN → revert + issue
-          if [ "$IS_CLEAN" = false ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-
-            git revert --no-edit HEAD
-            git pull --rebase origin main
-            git push origin main
-
-            gh label create "needs-approval" --color "f9d0c4" --force || true
-
-            gh issue create \
-              --title "🔔 @${ACTOR} wants to edit protected content" \
-              --body "Issue raised. Comment /approve to allow or /reject to deny." \
-              --label "needs-approval" \
-              --repo "$REPO"
-
-            echo "Reverted + issue opened"
-          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
