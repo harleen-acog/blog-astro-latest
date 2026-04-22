@@ -34,6 +34,7 @@ jobs:
           ACTOR="${{ github.actor }}"
           COMMIT_SHA="${{ github.sha }}"
           REPO="${{ github.repository }}"
+          
           FOREIGN_FILES=""
           IS_CLEAN=true
 
@@ -63,7 +64,7 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git revert --no-edit HEAD
             git push origin main
-
+            FILES_LIST=$(echo -e "$FOREIGN_FILES")
             BODY=$(cat <<EOF
 ### @${ACTOR} pushed changes to another user's folder
 
@@ -71,7 +72,7 @@ jobs:
 **Commit:** [\`${COMMIT_SHA:0:7}\`](https://github.com/${REPO}/commit/${COMMIT_SHA})
 
 **Files needing approval:**
-$(echo -e "$FOREIGN_FILES")
+${FILES_LIST}
 
 ---
 
