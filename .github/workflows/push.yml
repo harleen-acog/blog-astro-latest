@@ -125,14 +125,20 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/users/${ACTOR}")
 
+            NAME=$(echo "$DATA" | jq -r '.name // .login')
+            LOGIN=$(echo "$DATA" | jq -r '.login')
+            AVATAR=$(echo "$DATA" | jq -r '.avatar_url')
+            BIO=$(echo "$DATA" | jq -r '.bio // ""')
+
             cat > "$PROFILE_FILE" <<EOF
 {
-  "name": $(echo "$DATA" | jq '.name // .login'),
-  "login": $(echo "$DATA" | jq '.login'),
-  "avatar_url": $(echo "$DATA" | jq '.avatar_url'),
-  "bio": $(echo "$DATA" | jq '.bio // ""')
+  "name": "$NAME",
+  "login": "$LOGIN",
+  "avatar_url": "$AVATAR",
+  "bio": "$BIO"
 }
 EOF
+          
             CHANGED=true
           fi
 
