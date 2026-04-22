@@ -1,8 +1,3 @@
-# .github/workflows/push.yml
-# Only triggers when markdown post files change
-# 1. Own folder / first time → setup + build
-# 2. Foreign folder          → revert + open issue for owner
-
 name: Push Handler
 
 env:
@@ -13,12 +8,9 @@ on:
     branches:
       - main
     paths:
-      - 'src/content/posts/**'   # only runs when post files change
+      - 'src/content/posts/**'
 
 jobs:
-  # ──────────────────────────────────────
-  # JOB 1: Check who owns the changed files
-  # ──────────────────────────────────────
   ownership-check:
     name: Ownership Check
     runs-on: ubuntu-latest
@@ -41,6 +33,7 @@ jobs:
         run: |
           ACTOR="${{ github.actor }}"
           COMMIT_SHA="${{ github.sha }}"
+          REPO="${{ github.repository }}"
           FOREIGN_FILES=""
           IS_CLEAN=true
 
@@ -61,7 +54,6 @@ jobs:
               FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (belongs to @${FOLDER_USER})"
               IS_CLEAN=false
             fi
-
           done < changed.txt
 
           echo "is_clean=$IS_CLEAN" >> $GITHUB_OUTPUT
@@ -76,7 +68,7 @@ jobs:
 ### @${ACTOR} pushed changes to another user's folder
 
 **Pushed by:** @${ACTOR}
-**Commit:** [\`${COMMIT_SHA:0:7}\`](https://github.com/${{ github.repository }}/commit/${COMMIT_SHA})
+**Commit:** [\`${COMMIT_SHA:0:7}\`](https://github.com/${REPO}/commit/${COMMIT_SHA})
 
 **Files needing approval:**
 $(echo -e "$FOREIGN_FILES")
@@ -96,20 +88,16 @@ EOF
 )
 
             gh issue create \
-              --title " @${ACTOR} wants to edit protected content" \
+              --title "🔔 @${ACTOR} wants to edit protected content" \
               --body "$BODY" \
               --label "needs-approval" \
-              --repo "${{ github.repository }}"
+              --repo "$REPO"
 
             echo "Reverted + issue opened"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # ──────────────────────────────────────
-  # JOB 2: Setup user
-  # folder + profile + CODEOWNERS
-  # Only runs if all files are own/new
-  # ──────────────────────────────────────
+
   setup-user:
     name: Setup User
     runs-on: ubuntu-latest
@@ -136,29 +124,25 @@ EOF
 
           mkdir -p "$AUTHORS_DIR"
 
-          # Create folder + move file if first time user
           if [ ! -d "$USER_FOLDER" ]; then
-            echo "📁 New user — creating folder for @${ACTOR}"
             mkdir -p "$USER_FOLDER"
             CHANGED=true
 
-            # Move any misplaced files into correct folder
             while IFS= read -r file; do
               [ -z "$file" ] && continue
               [[ "$file" != src/content/posts/* ]] && continue
               FILENAME=$(basename "$file")
+
               if [ -f "$file" ] && [ "$file" != "${USER_FOLDER}/${FILENAME}" ]; then
-                echo "📦 Moving $file → ${USER_FOLDER}/${FILENAME}"
                 mv "$file" "${USER_FOLDER}/${FILENAME}"
                 CHANGED=true
               fi
             done < changed.txt
           fi
 
-          # Auto-create profile from GitHub API
           PROFILE_FILE="${AUTHORS_DIR}/${ACTOR}.json"
+
           if [ ! -f "$PROFILE_FILE" ]; then
-            echo "👤 Fetching GitHub profile for @${ACTOR}..."
             DATA=$(curl -s \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
@@ -172,18 +156,14 @@ EOF
   "bio": $(echo "$DATA" | jq '.bio // ""')
 }
 EOF
-            echo "✅ Profile created"
             CHANGED=true
           fi
 
-          # Add to CODEOWNERS if missing
           if ! grep -q "@${ACTOR}" "$CODEOWNERS" 2>/dev/null; then
             echo "src/content/posts/${ACTOR}/*    @${ACTOR}" >> "$CODEOWNERS"
-            echo "✅ CODEOWNERS updated"
             CHANGED=true
           fi
 
-          # Commit if anything changed
           if [ "$CHANGED" = true ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -192,11 +172,6 @@ EOF
             git push
           fi
 
-  # ──────────────────────────────────────
-  # JOB 3: Build
-  # Validates frontmatter via Zod schema
-  # Bad field → build fails → logs show exactly what's wrong
-  # ──────────────────────────────────────
   build:
     name: Build
     runs-on: ubuntu-latest
