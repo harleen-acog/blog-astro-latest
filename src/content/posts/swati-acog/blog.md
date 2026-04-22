@@ -9,4 +9,4 @@ contributors: ["swati-acog"]
 
 ## Welcome
 
-it was a fun trip
+it was a fun trip.
