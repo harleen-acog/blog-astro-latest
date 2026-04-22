@@ -1,1 +1,1 @@
-A	src/content/posts/power-of-learning-in-public.md
+M	src/content/posts/swati-acog/blog.md
