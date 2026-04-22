@@ -28,15 +28,15 @@ jobs:
           git diff --name-only HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
           cat changed.txt
 
-      - name: Check ownership
+      - name: Check ownership + auto-fix
         id: check
         run: |
           ACTOR="${{ github.actor }}"
-          COMMIT_SHA="${{ github.sha }}"
           REPO="${{ github.repository }}"
-          
+
           FOREIGN_FILES=""
           IS_CLEAN=true
+          AUTO_FIXED=false
 
           while IFS= read -r file; do
             [ -z "$file" ] && continue
@@ -44,27 +44,57 @@ jobs:
 
             DEPTH=$(echo "$file" | tr '/' '\n' | wc -l)
             FOLDER_USER=$(echo "$file" | cut -d'/' -f4)
+            FILENAME=$(basename "$file")
 
+            # ✅ INVALID PATH → auto-fix (first-time user)
             if [ "$DEPTH" -ne 5 ]; then
-              FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (invalid path)"
-              IS_CLEAN=false
+              echo "⚠️ Invalid path: $file"
+
+              CORRECT_DIR="src/content/posts/${ACTOR}"
+              CORRECT_PATH="${CORRECT_DIR}/${FILENAME}"
+
+              echo "👉 Moving to $CORRECT_PATH"
+
+              mkdir -p "$CORRECT_DIR"
+              git mv "$file" "$CORRECT_PATH"
+
+              AUTO_FIXED=true
               continue
             fi
 
+            #  FOREIGN FOLDER → block
             if [ "$FOLDER_USER" != "$ACTOR" ]; then
               FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (belongs to @${FOLDER_USER})"
               IS_CLEAN=false
             fi
+
           done < changed.txt
+
+          #  If auto-fixed → commit + exit early
+          if [ "$AUTO_FIXED" = true ]; then
+            echo "📦 Auto-fixed file paths"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            git commit -am "auto: fix post path for @${ACTOR}"
+            git push origin main
+
+            echo "is_clean=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
           echo "is_clean=$IS_CLEAN" >> $GITHUB_OUTPUT
 
+          # ❌ FOREIGN → revert + issue
           if [ "$IS_CLEAN" = false ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git revert --no-edit HEAD
             git push origin main
+
             gh label create "needs-approval" --color "f9d0c4" --force || true
+
             gh issue create \
               --title "🔔 @${ACTOR} wants to edit protected content" \
               --body "Issue raised. Comment /approve to allow or /reject to deny." \
@@ -88,35 +118,14 @@ jobs:
           fetch-depth: 2
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get changed post files
-        run: |
-          git diff --name-only HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
-
-      - name: Setup folder, profile, CODEOWNERS
+      - name: Setup profile + CODEOWNERS
         run: |
           ACTOR="${{ github.actor }}"
-          USER_FOLDER="src/content/posts/${ACTOR}"
           AUTHORS_DIR="src/content/authors"
           CODEOWNERS=".github/CODEOWNERS"
           CHANGED=false
 
           mkdir -p "$AUTHORS_DIR"
-
-          if [ ! -d "$USER_FOLDER" ]; then
-            mkdir -p "$USER_FOLDER"
-            CHANGED=true
-
-            while IFS= read -r file; do
-              [ -z "$file" ] && continue
-              [[ "$file" != src/content/posts/* ]] && continue
-              FILENAME=$(basename "$file")
-
-              if [ -f "$file" ] && [ "$file" != "${USER_FOLDER}/${FILENAME}" ]; then
-                mv "$file" "${USER_FOLDER}/${FILENAME}"
-                CHANGED=true
-              fi
-            done < changed.txt
-          fi
 
           PROFILE_FILE="${AUTHORS_DIR}/${ACTOR}.json"
 
@@ -131,7 +140,6 @@ jobs:
             AVATAR=$(echo "$DATA" | jq -r '.avatar_url')
             BIO=$(echo "$DATA" | jq -r '.bio // ""')
 
-            # ✅ Replaced EOF with jq (safe)
             jq -n \
               --arg name "$NAME" \
               --arg login "$LOGIN" \
