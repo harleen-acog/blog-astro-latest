@@ -64,7 +64,7 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git revert --no-edit HEAD
             git push origin main
-
+            gh label create "needs-approval" --color "f9d0c4" --force || true
             gh issue create \
               --title "🔔 @${ACTOR} wants to edit protected content" \
               --body "Issue raised. Comment /approve to allow or /reject to deny." \
