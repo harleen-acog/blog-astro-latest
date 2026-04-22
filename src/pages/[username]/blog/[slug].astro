@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from "astro";
-import BlogPost from "../../../../layouts/BlogPost.astro";
+import BlogPost from "../../../layouts/BlogPost.astro";
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths(){
@@ -13,11 +13,10 @@ export async function getStaticPaths(){
       props:{entry}
     }
   })
+}
 const { username, slug } = Astro.params;
 const {entry} = Astro.props;
-const {Content = await render(entry)};
-
-
+const {Content} = await render(entry);
 ---
 
 <BlogPost post={entry.data} username={username} slug={slug}>

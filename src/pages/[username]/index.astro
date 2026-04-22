@@ -1,11 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
-import Layout from '../../layouts/Layout.astro';
-import BlogPreview from '../../components/BlogPreview.astro';
+import BlogPreview from '../../components/user/BlogPreview.astro';
+import UserLayout from '../../layouts/UserLayout.astro';
+import Hero from '../../components/user/Hero.astro';
 
-import UserLayout from "../../../layouts/UserLayout.astro";
-import Hero from "../../../components/user/Hero.astro";
-import "../../../styles/global.css"
+import "../../styles/global.css"
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('posts', ({ data }) => !data.draft);

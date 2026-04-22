@@ -5,7 +5,7 @@ const { posts, username } = Astro.props;
 <section class="blog-preview">
   <div class="section-header">
     <h2>Latest Posts</h2>
-    <a href={`/users/${username}/blog`} class="view-all">
+    <a href={`${username}/blog`} class="view-all">
       View all
     </a>
   </div>
@@ -13,7 +13,7 @@ const { posts, username } = Astro.props;
   <div class="post-list">
     {posts.map((post) => (
       <article class="post-card">
-        <a href={`/users/${username}/blog/${post.slug}`} class="post-link">
+        <a href={`${username}/blog/${post.slug}`} class="post-link">
           <h3>{post.title}</h3>
         </a>
 
@@ -23,8 +23,8 @@ const { posts, username } = Astro.props;
           </p>
         )}
 
-        {post.excerpt && (
-          <p class="post-excerpt">{post.excerpt}</p>
+        {post.description && (
+          <p class="post-excerpt">{post.description}</p>
         )}
       </article>
     ))}

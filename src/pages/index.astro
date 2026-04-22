@@ -42,7 +42,7 @@ const latestPosts = allPosts.map((entry)=>{
         {latestPosts.map((post) => (
           <article class="post-card">
             <h3>
-              <a href={url(`users/${post.username}/blog/${post.slug}`)}>
+              <a href={url(`${post.username}/blog/${post.slug}`)}>
                 {post.title}
               </a>
             </h3>

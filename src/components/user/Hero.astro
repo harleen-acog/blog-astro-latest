@@ -16,12 +16,9 @@ const { user } = Astro.props;
     </p>
 
     <div class="hero-buttons">
-      <a href={`/users/${user.username}/blog`} class="btn">
+      <a href={`${user.username}/blog`} class="btn">
         View Blogs
       </a>
-      <!-- <a href={`/users/${user.username}/projects`} class="btn btn-outline">
-        Projects
-      </a> -->
     </div>
   </div>
 
