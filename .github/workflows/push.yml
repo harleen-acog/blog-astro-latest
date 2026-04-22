@@ -25,7 +25,7 @@ jobs:
 
       - name: Get changed post files
         run: |
-          git diff --name-only HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
+          git diff --name-status HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
           cat changed.txt
 
       - name: Check ownership + auto-fix
@@ -38,7 +38,7 @@ jobs:
           IS_CLEAN=true
           AUTO_FIXED=false
 
-          while IFS= read -r file; do
+          while read STATUS file; do
             [ -z "$file" ] && continue
             [[ "$file" != src/content/posts/* ]] && continue
 
@@ -46,14 +46,24 @@ jobs:
             FOLDER_USER=$(echo "$file" | cut -d'/' -f4)
             FILENAME=$(basename "$file")
 
-            # ✅ INVALID PATH → auto-fix (first-time user)
+            # 🗑️ DELETE CASE
+            if [ "$STATUS" = "D" ]; then
+              if [ "$FOLDER_USER" = "$ACTOR" ] || [[ "$ADMINS" == *"$ACTOR"* ]]; then
+                echo "✅ Allowed delete: $file"
+                continue
+              else
+                FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (delete not allowed)"
+                IS_CLEAN=false
+                continue
+              fi
+            fi
+
+            # ⚠️ INVALID PATH → auto-fix
             if [ "$DEPTH" -ne 5 ]; then
               echo "⚠️ Invalid path: $file"
 
               CORRECT_DIR="src/content/posts/${ACTOR}"
               CORRECT_PATH="${CORRECT_DIR}/${FILENAME}"
-
-              echo "👉 Moving to $CORRECT_PATH"
 
               mkdir -p "$CORRECT_DIR"
               git mv "$file" "$CORRECT_PATH"
@@ -62,7 +72,7 @@ jobs:
               continue
             fi
 
-            #  FOREIGN FOLDER → block
+            # ❌ FOREIGN FOLDER
             if [ "$FOLDER_USER" != "$ACTOR" ]; then
               FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (belongs to @${FOLDER_USER})"
               IS_CLEAN=false
@@ -70,14 +80,13 @@ jobs:
 
           done < changed.txt
 
-          #  If auto-fixed → commit + exit early
+          # ✅ Auto-fix commit
           if [ "$AUTO_FIXED" = true ]; then
-            echo "📦 Auto-fixed file paths"
-
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
 
             git commit -am "auto: fix post path for @${ACTOR}"
+            git pull --rebase origin main
             git push origin main
 
             echo "is_clean=true" >> $GITHUB_OUTPUT
@@ -90,7 +99,9 @@ jobs:
           if [ "$IS_CLEAN" = false ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
+
             git revert --no-edit HEAD
+            git pull --rebase origin main
             git push origin main
 
             gh label create "needs-approval" --color "f9d0c4" --force || true
@@ -163,9 +174,12 @@ jobs:
           if [ "$CHANGED" = true ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
+
             git add .
             git diff --staged --quiet || git commit -m "auto: setup @${ACTOR} [skip ci]"
-            git push
+
+            git pull --rebase origin main
+            git push origin main
           fi
 
   build:
