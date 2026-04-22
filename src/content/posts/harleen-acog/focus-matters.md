@@ -4,6 +4,7 @@ title: "Mastering Focus in a Distracted World"
 date: 2026-04-22
 description: "Practical strategies to build deep focus, reduce distractions, and get meaningful work done consistently."
 tags: ["productivity", "focus", "deep work", "habits"]
+contributors: ["harleen-acog"]
 draft: false
 ---
 

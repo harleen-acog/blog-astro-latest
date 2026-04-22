@@ -2,6 +2,7 @@
 title: "Testing"
 date: 2026-04-21
 description: "My first post using Astro Content Collections and GitHub as a CMS"
+contributors: ["harleenkaur1343"]
 tags: ["astro", "blog", "intro"]
 draft: false
 ---

@@ -3,6 +3,7 @@ title: "Hello World"
 date: 2026-04-21
 description: "My first post using Astro Content Collections and GitHub as a CMS"
 tags: ["astro", "blog", "intro"]
+contributors: ["harleen-acog"]
 draft: false
 ---
 

@@ -3,6 +3,7 @@ title: "The Power of Learning in Public"
 date: 2026-04-22
 description: "Discover how sharing your learning journey openly can accelerate growth, build opportunities, and create a strong personal brand."
 tags: ["learning", "growth", "personal-brand", "career"]
+contributors: ["rajat-acog"]
 draft: false
 ---
 
