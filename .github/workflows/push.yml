@@ -51,39 +51,29 @@ jobs:
             DEPTH=$(echo "$file" | tr '/' '\n' | wc -l)
             FOLDER_USER=$(echo "$file" | cut -d'/' -f4)
 
-            # Invalid path depth
             if [ "$DEPTH" -ne 5 ]; then
-              echo "❌ Invalid path: $file"
-              echo "   Must be: src/content/posts/{github-username}/{post}.md"
               FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (invalid path)"
               IS_CLEAN=false
               continue
             fi
 
-            # Foreign folder
             if [ "$FOLDER_USER" != "$ACTOR" ]; then
-              echo "  Foreign: $file (owner: @${FOLDER_USER})"
               FOREIGN_FILES="${FOREIGN_FILES}\n- \`$file\` (belongs to @${FOLDER_USER})"
               IS_CLEAN=false
-            else
-              echo "Own: $file"
             fi
 
           done < changed.txt
 
           echo "is_clean=$IS_CLEAN" >> $GITHUB_OUTPUT
 
-          # Foreign files — revert + open issue
           if [ "$IS_CLEAN" = false ]; then
-            echo "── Reverting commit ──"
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git revert --no-edit HEAD
             git push origin main
 
-            gh issue create \
-              --title "🔔 @${ACTOR} wants to edit protected content" \
-              --body "### @${ACTOR} pushed changes to another user's folder
+            BODY=$(cat <<EOF
+### @${ACTOR} pushed changes to another user's folder
 
 **Pushed by:** @${ACTOR}
 **Commit:** [\`${COMMIT_SHA:0:7}\`](https://github.com/${{ github.repository }}/commit/${COMMIT_SHA})
@@ -101,16 +91,20 @@ Comment \`/approve\`
 **To reject:**
 Comment \`/reject\`
 
-<!-- meta: commit=${COMMIT_SHA} pusher=${ACTOR} -->" \
+<!-- meta: commit=${COMMIT_SHA} pusher=${ACTOR} -->
+EOF
+)
+
+            gh issue create \
+              --title " @${ACTOR} wants to edit protected content" \
+              --body "$BODY" \
               --label "needs-approval" \
               --repo "${{ github.repository }}"
 
-            echo " Reverted + issue opened"
+            echo "Reverted + issue opened"
           fi
-
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   # ──────────────────────────────────────
   # JOB 2: Setup user
   # folder + profile + CODEOWNERS
