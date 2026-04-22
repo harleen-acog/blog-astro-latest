@@ -64,9 +64,10 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git revert --no-edit HEAD
             git push origin main
+
             gh issue create \
               --title "🔔 @${ACTOR} wants to edit protected content" \
-              --body "Issue raised, to reject comment ('reject'), to approve comment ('approve')" \
+              --body "Issue raised. Comment /approve to allow or /reject to deny." \
               --label "needs-approval" \
               --repo "$REPO"
 
@@ -130,15 +131,19 @@ jobs:
             AVATAR=$(echo "$DATA" | jq -r '.avatar_url')
             BIO=$(echo "$DATA" | jq -r '.bio // ""')
 
-            cat > "$PROFILE_FILE" <<EOF
-{
-  "name": "$NAME",
-  "login": "$LOGIN",
-  "avatar_url": "$AVATAR",
-  "bio": "$BIO"
-}
-EOF
-          
+            # ✅ Replaced EOF with jq (safe)
+            jq -n \
+              --arg name "$NAME" \
+              --arg login "$LOGIN" \
+              --arg avatar "$AVATAR" \
+              --arg bio "$BIO" \
+              '{
+                name: $name,
+                login: $login,
+                avatar_url: $avatar,
+                bio: $bio
+              }' > "$PROFILE_FILE"
+
             CHANGED=true
           fi
 
