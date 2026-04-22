@@ -64,33 +64,9 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git revert --no-edit HEAD
             git push origin main
-            FILES_LIST=$(echo -e "$FOREIGN_FILES")
-            BODY=$(cat <<EOF
-### @${ACTOR} pushed changes to another user's folder
-
-**Pushed by:** @${ACTOR}
-**Commit:** [\`${COMMIT_SHA:0:7}\`](https://github.com/${REPO}/commit/${COMMIT_SHA})
-
-**Files needing approval:**
-${FILES_LIST}
-
----
-
-The commit has been **reverted** and is pending approval.
-
-**To approve** (folder owner or @${ADMINS}):
-Comment \`/approve\`
-
-**To reject:**
-Comment \`/reject\`
-
-<!-- meta: commit=${COMMIT_SHA} pusher=${ACTOR} -->
-EOF
-)
-
             gh issue create \
               --title "🔔 @${ACTOR} wants to edit protected content" \
-              --body "$BODY" \
+              --body "Issue raised, to reject comment ('reject'), to approve comment ('approve')" \
               --label "needs-approval" \
               --repo "$REPO"
 
