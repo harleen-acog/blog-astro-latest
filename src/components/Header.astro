@@ -2,7 +2,7 @@
 const { user } = Astro.props;
 ---
 
-<header>
+<header data-pagefind-ignore>
   <nav>
     <h2>
       <a href={`/users/${user.username}`}>
@@ -12,8 +12,8 @@ const { user } = Astro.props;
 
     <div class="internal-links">
       <a href={`/`}>Home</a>
-      <a href={`/users/${user.username}/blog`}>Blog</a>
-      <a href="/users">Team</a>
+      <a href={`/${user.username}/blog`}>Blog</a>
+      <a href="/authors">Authors</a>
     </div>
   </nav>
 </header>

@@ -1,0 +1,48 @@
+---
+// src/components/Search.astro
+// Pagefind search UI — only works after `npm run build`
+// In dev mode the box shows but returns no results (index doesn't exist yet)
+---
+
+<div id="search-wrapper">
+  <div id="search"></div>
+</div>
+
+<link href="/_pagefind/pagefind-ui.css" rel="stylesheet" />
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    // @ts-ignore — pagefind is a post-build artifact
+    import('/pagefind/pagefind-ui.js').then(({ PagefindUI }) => {
+      new PagefindUI({
+        element: '#search',
+        showImages: false,
+        excerptLength: 20,
+        resetStyles: false,
+      });
+    }).catch(() => {
+      // silently fail in dev mode — index doesn't exist yet
+      const el = document.getElementById('search');
+      if (el) {
+        el.innerHTML = '<p style="color:var(--color-text-muted);font-size:0.85rem;">Search available after build</p>';
+      }
+    });
+  });
+</script>
+
+<style>
+  #search-wrapper {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+  }
+
+  /* Map pagefind CSS vars to your theme vars */
+  :root {
+    --pagefind-ui-primary: var(--color-accent);
+    --pagefind-ui-text: var(--color-text-main);
+    --pagefind-ui-background: var(--color-bg-offset);
+    --pagefind-ui-border: var(--color-border);
+    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-font: var(--font-sans);
+  }
+</style>

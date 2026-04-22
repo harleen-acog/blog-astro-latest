@@ -1,0 +1,25 @@
+---
+import type { GetStaticPaths } from "astro";
+import BlogPost from "../../../../layouts/BlogPost.astro";
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths(){
+  const allPosts = await getCollection('posts',({ data }) => !data.draft);
+
+  return allPosts.map((entry)=>{
+    const [username,slug] = entry.id.split('/');
+    return {
+      params: {username,slug},
+      props:{entry}
+    }
+  })
+const { username, slug } = Astro.params;
+const {entry} = Astro.props;
+const {Content = await render(entry)};
+
+
+---
+
+<BlogPost post={entry.data} username={username} slug={slug}>
+  <Content />
+</BlogPost>

@@ -1,26 +1,37 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
-import { getUsers, getUserByUsername } from "../../../../lib/queries/users";
-import { getPostsByUser } from "../../../../lib/queries/posts";
 import Header from "../../../../components/Header.astro";
+import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const users = getUsers();
+  const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+  const usernames = [...new Set(allPosts.map((e) => e.id.split('/')[0]))];
 
-  return users.map((user) => ({
-    params: { username: user.username },
+  return usernames.map((username) => ({
+    params: { username },
   }));
 }
 
+
 const { username } = Astro.params;
-const user = getUserByUsername(username);
 
-if (!user) throw new Error("User not found");
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 
-const posts = getPostsByUser(user.id);
+const posts = allPosts
+  .filter((e) => e.id.split('/')[0] === username)
+  .map((e) => ({
+    slug: e.id.split('/')[1],
+    title: e.data.title,
+    description: e.data.description,
+    date: e.data.date,
+    tags: e.data.tags,
+  }))
+  .sort((a, b) => b.date.valueOf() - a.date.valueOf());
+
+const user = { name: username, username };
 ---
 
-<Layout title={`${user.name} | Blog`} description={`Posts by ${user.name}`}>
+<Layout title={`${usernames} | Blog`} description={`Posts by ${user.name}`}>
   <Header user={user} slot="Header"/>
 
   <section class="blog-page">

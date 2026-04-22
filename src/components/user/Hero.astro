@@ -10,17 +10,14 @@ const { user } = Astro.props;
       {user.name}
     </h1>
 
-    <h2 style="font-weight: 400; color: var(--color-text-muted); margin-bottom: 1.5rem; text-transform: uppercase; font-size: 1rem;">
-      {user.role}
-    </h2>
 
     <p style="font-size: 1.1rem; line-height: 1.7; margin-bottom: 2rem;">
-      {user.about}
+      {user.bio}
     </p>
 
     <div class="hero-buttons">
       <a href={`/users/${user.username}/blog`} class="btn">
-        View Blog
+        View Blogs
       </a>
       <!-- <a href={`/users/${user.username}/projects`} class="btn btn-outline">
         Projects
@@ -30,10 +27,10 @@ const { user } = Astro.props;
 
   <div class="hero-image">
     <Image
-      src={`https://i.pravatar.cc/300?u=${user.id}`}
-      width={280}
+      src={user.avatar}
+        alt={user.name}
+        width={280}
       height={280}
-      alt="Profile"
     />
   </div>
 </section>

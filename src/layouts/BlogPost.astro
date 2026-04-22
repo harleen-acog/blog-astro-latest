@@ -4,8 +4,10 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FormattedDate from "../components/FormattedDate.astro";
 import "../styles/global.css";
-import { getCurrentUser } from "../lib/auth";
-const { post, user, html } = Astro.props;
+const { post, username, slug } = Astro.props;
+
+const user = { name: username, username };
+
 ---
 
 <html lang="en">
@@ -17,7 +19,10 @@ const { post, user, html } = Astro.props;
     <Header user={user} />
 
     <main class="container">
-      <article class="blog-post">
+      <article class="blog-post"
+      data-pagefind-body
+        data-pagefind-meta={`title:${post.title}`}
+      >
         <div class="title">
           <!-- {
             user && user.id === post.author_id && (
@@ -28,9 +33,21 @@ const { post, user, html } = Astro.props;
           <div class="date">
             <FormattedDate date={post.created_at} />
           </div>
+          <h1>{post.title}</h1>
+          <p class="author-line">
+            by <a href={`/${username}`}>{username}</a>
+          </p>
+          {post.tags.length > 0 && (
+            <div class="tags">
+              {post.tags.map((tag: string) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
-        
-        <div class="prose" set:html={html} />
+        <div class="prose">
+          <slot /> 
+        </div>
       </article>
     </main>
 
@@ -77,5 +94,37 @@ const { post, user, html } = Astro.props;
   .prose img {
     max-width: 100%;
     border-radius: 10px;
+  }
+
+  .prose code {
+    background: var(--color-bg-offset);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .prose pre {
+    background: var(--color-bg-offset);
+    padding: 1.25rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .prose a {
+    color: var(--color-accent);
+  }
+
+  .prose blockquote {
+    border-left: 3px solid var(--color-accent);
+    margin-left: 0;
+    padding-left: 1.25rem;
+    color: var(--color-text-muted);
+    font-style: italic;
   }
 </style>
