@@ -1,1 +1,7 @@
-src/content/posts/harleen-acog/*    @harleen-acog
+# .github/CODEOWNERS
+# Admin owns everything by default
+*    @harleen-acog
+
+# Author entries below are auto-appended by GitHub Action
+# on each user's first push — do not edit manually below this line
+src/content/authors/*    @harleen-acog
