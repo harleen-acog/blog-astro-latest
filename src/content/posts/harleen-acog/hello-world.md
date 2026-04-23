@@ -9,7 +9,7 @@ draft: false
 
 ## Welcome
 
-This is my first post. It's written in **markdown** and validated automatically by Astro's Content Collections.
+Hey there welcome. This is the first line
 
 ## How This Works
 
