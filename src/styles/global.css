@@ -140,7 +140,7 @@ h1 {
 }
 
 h2 {
-	font-size: clamp(1.5rem, 3vw, 2rem);
+	font-size: clamp(1.38rem, 3vw, 1.5rem);
 	font-weight: 600;
 	margin-top: 2.5rem;
 	padding-bottom: 0.4rem;

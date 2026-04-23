@@ -4,6 +4,8 @@ date: 2026-04-22
 description: "A practical guide to creating habits that last, avoiding burnout, and building long-term consistency."
 tags: ["habits", "productivity", "self-improvement", "consistency"]
 contributors: ["harleenkaur1343"]
+cover: "https://images.unsplash.com/photo-1613520761471-8d5f28e343c0?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+coverAlt: "Person planning daily habits and tracking goals on a notebook and laptop"
 draft: false
 ---
 

@@ -5,6 +5,8 @@ description: "Discover how sharing your learning journey openly can accelerate g
 tags: ["learning", "growth", "personal-brand", "career"]
 contributors: ["rajat-acog"]
 draft: false
+cover: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+coverAlt: "Learning in public"
 ---
 
 ## 🌍 What Is Learning in Public?
