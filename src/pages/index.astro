@@ -2,7 +2,6 @@
 import Layout from "../layouts/Layout.astro"; // or your main layout
 import { url } from "../utils/paths";
 import "../styles/global.css";
-import { formatDate } from "../lib/dateFormat";
 import Search from "../components/Search.astro";
 import { getCollection } from "astro:content";
 
@@ -18,6 +17,8 @@ const latestPosts = allPosts
       description: entry.data.description,
       date: entry.data.date,
       tags: entry.data.tags,
+      cover: entry.data.cover,
+      coverAlt: entry.data.coverAlt,
     };
   })
   .sort((a, b) => b.date.valueOf() - a.date.valueOf())
@@ -49,17 +50,48 @@ const latestPosts = allPosts
         <div class="post-grid">
           {latestPosts.map((post) => (
             <article class="post-card">
-              <h3>
-                <a href={url(`${post.username}/blog/${post.slug}`)}>
-                  {post.title}
+              <div class="post-content">
+                <a
+                  href={url(`${post.username}/blog/${post.slug}`)}
+                  class="cover-link"
+                >
+                  {post.cover ? (
+                    typeof post.cover === "string" ? (
+                      // External image URL
+                      <img
+                        src={post.cover}
+                        alt={post.coverAlt || post.title}
+                        class="cover-img"
+                      />
+                    ) : (
+                      // Astro image (optimized)
+                      <img
+                        src={post.cover.src}
+                        width={post.cover.width}
+                        height={post.cover.height}
+                        alt={post.coverAlt || post.title}
+                        class="cover-img"
+                      />
+                    )
+                  ) : (
+                    // Gradient fallback
+                    <div class="cover-fallback">
+                      <span>{post.title}</span>
+                    </div>
+                  )}
                 </a>
-              </h3>
+                <h3>
+                  <a href={url(`${post.username}/blog/${post.slug}`)}>
+                    {post.title}
+                  </a>
+                </h3>
 
-              <p class="meta">
-                {`${post.username}  |  ${post.date.toLocaleDateString()} `}
-              </p>
+                <p class="meta">
+                  {`${post.username} | ${post.date.toLocaleDateString()}`}
+                </p>
 
-              {post.description && <p>{post.description}</p>}
+                {post.description && <p>{post.description}</p>}
+              </div>
             </article>
           ))}
         </div>
@@ -111,20 +143,58 @@ const latestPosts = allPosts
   .post-grid {
     display: grid;
     gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
   }
-
+  
   .post-card {
     border: 1px solid var(--color-border);
-    padding: 1rem;
-    border-radius: 8px;
+    border-radius: 10px;
     background-color: var(--color-bg-offset);
     box-shadow: 1px 3px 6px #dfdfdf;
+    overflow: hidden;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 2px 6px 14px rgba(0, 0, 0, 0.12);
+  }
+
+  /* IMAGE */
+  .cover-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* FALLBACK GRADIENT */
+  .cover-fallback {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+
+    background: linear-gradient(135deg, var(--color-accent), #6b7280);
+
+    color: white;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* CONTENT */
+  .post-content {
+    padding: 1rem;
   }
 
   .meta {
     font-size: 0.85rem;
     color: var(--color-text-muted);
   }
+
   .section-header {
     display: flex;
     justify-content: space-between;

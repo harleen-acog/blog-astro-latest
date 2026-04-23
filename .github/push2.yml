@@ -25,7 +25,7 @@ jobs:
 
       - name: Get changed post files
         run: |
-          git diff --name-status HEAD~1 HEAD -- 'src/content/posts/**' > changed.txt
+          git diff --name-status HEAD~1 HEAD -- '*.md' '*.mdx' > changed.txt
           cat changed.txt
 
       - name: Check ownership + auto-fix
@@ -40,17 +40,6 @@ jobs:
           while read STATUS file; do
             [ -z "$file" ] && continue
             [[ "$file" != src/content/posts/* ]] && continue
-
-            EXTENSION="${file##*.}"
-            IMAGE_EXTENSIONS="jpg jpeg png gif webp"
-
-            IS_IMAGE=false
-            for ext in $IMAGE_EXTENSIONS; do
-              if [ "$EXTENSION" = "$ext" ]; then
-                IS_IMAGE=true
-                break
-              fi
-            done
 
             DEPTH=$(echo "$file" | tr '/' '\n' | wc -l)
             FOLDER_USER=$(echo "$file" | cut -d'/' -f4)
@@ -69,17 +58,10 @@ jobs:
             fi
 
             #  INVALID PATH → auto-fix (first-time user)
-            # posts must be at depth 5, images must be at depth 6 (inside /images/)
-            if { [ "$IS_IMAGE" = false ] && [ "$DEPTH" -ne 5 ]; } || \
-               { [ "$IS_IMAGE" = true  ] && [ "$DEPTH" -ne 6 ]; }; then
+            if [ "$DEPTH" -ne 5 ]; then
               echo " Invalid path: $file"
 
-              if [ "$IS_IMAGE" = true ]; then
-                CORRECT_DIR="src/content/posts/${ACTOR}/images"
-              else
-                CORRECT_DIR="src/content/posts/${ACTOR}"
-              fi
-
+              CORRECT_DIR="src/content/posts/${ACTOR}"
               CORRECT_PATH="${CORRECT_DIR}/${FILENAME}"
 
               mkdir -p "$CORRECT_DIR"
@@ -93,15 +75,13 @@ jobs:
             if [ "$FOLDER_USER" != "$ACTOR" ]; then
               echo " Foreign edit detected: $file"
 
-              # skip contributor injection for images — only applies to md/mdx
-              if [ "$IS_IMAGE" = false ]; then
-                if grep -q "^contributors:" "$file"; then
-                  if ! grep -q "$ACTOR" "$file"; then
-                    sed -i "/^contributors:/ s/]$/, \"$ACTOR\"]/" "$file"
-                  fi
-                else
-                  sed -i "1,/^---$/ s/^---$/---\ncontributors: [\"$FOLDER_USER\", \"$ACTOR\"]/" "$file"
+              # Add or update contributors field
+              if grep -q "^contributors:" "$file"; then
+                if ! grep -q "$ACTOR" "$file"; then
+                  sed -i "/^contributors:/ s/]$/, \"$ACTOR\"]/" "$file"
                 fi
+              else
+                sed -i "1,/^---$/ s/^---$/---\ncontributors: [\"$FOLDER_USER\", \"$ACTOR\"]/" "$file"
               fi
 
               AUTO_FIXED=true
@@ -149,8 +129,6 @@ jobs:
           mkdir -p "$AUTHORS_DIR"
 
           PROFILE_FILE="${AUTHORS_DIR}/${ACTOR}.json"
-          POSTS_DIR="src/content/posts/${ACTOR}"
-          IMAGES_DIR="${POSTS_DIR}/images"
 
           if [ ! -f "$PROFILE_FILE" ]; then
             DATA=$(curl -s \
@@ -174,10 +152,6 @@ jobs:
                 avatar_url: $avatar,
                 bio: $bio
               }' > "$PROFILE_FILE"
-
-            # create posts + images folder for the new user
-            mkdir -p "$IMAGES_DIR"
-            touch "$IMAGES_DIR/.gitkeep"
 
             CHANGED=true
           fi
