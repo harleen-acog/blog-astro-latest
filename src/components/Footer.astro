@@ -1,9 +1,6 @@
 ---
-import {
-  CV_URL,
-
-} from '../consts';
-import { url } from '../utils/paths';
+import { CV_URL } from "../consts";
+import { url } from "../utils/paths";
 
 const year = new Date().getFullYear();
 const cvHref = CV_URL ? url(CV_URL) : null;
@@ -11,175 +8,169 @@ const cvHref = CV_URL ? url(CV_URL) : null;
 
 <footer class="site-footer">
   <div class="footer-content">
-
-
     <!-- Quick Links -->
     <nav class="footer-col" aria-label="Footer navigation">
       <h4>Quick Links</h4>
       <ul>
-        <li><a href={url('/')}>Home</a></li>
-        <li><a href={url('/blog')}>Blogs</a></li>
-
-        
+        <li><a href={url("/")}>Home</a></li>
+        <li><a href={url("/blog")}>Blogs</a></li>
       </ul>
     </nav>
-
   </div>
-
- 
 </footer>
 <style>
-.site-footer {
-  background-color: var(--color-bg-offset);
-  color: var(--color-text-main);
-  padding: 4rem 1rem;
-  margin-top: auto;
-  transition: background-color 0.3s ease;
-  position: relative;
-}
+  .site-footer {
+    background-color: var(--color-accent);
+    color: var(--color-bg-offset);
+    padding: 4rem 1rem;
+    margin-top: auto;
+    transition: background-color 0.3s ease;
+    position: relative;
+  }
 
-.site-footer::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-border) 20%,
-    var(--color-border) 80%,
-    transparent 100%
-  );
-  opacity: 0.6;
-}
+  .site-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-border) 20%,
+      var(--color-border) 80%,
+      transparent 100%
+    );
+    opacity: 0.6;
+  }
 
-.footer-content {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 3rem;
-}
-
-/* Headings */
-.footer-col h3 {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--color-accent);
-}
-
-.footer-col h4 {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1.25rem;
-}
-
-/* Links */
-.footer-col ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-col ul li {
-  margin-bottom: 0.75rem;
-}
-
-.footer-col a {
-  color: var(--color-text-muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-col a:hover {
-  color: var(--color-accent);
-}
-
-/* Brand text */
-.brand-col p {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--color-text-muted);
-  margin-bottom: 1.5rem;
-}
-
-.copyright {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-/* Contact */
-address {
-  font-style: normal;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--color-text-muted);
-}
-
-/* Social */
-.social-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.social-links a {
-  color: var(--color-text-muted);
-  transition: all 0.2s;
-}
-
-.social-links a:hover {
-  color: var(--color-accent);
-  transform: translateY(-2px);
-}
-
-/* Footer credit */
-.footer-credit {
-  text-align: center;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border);
-  font-size: 0.7rem;
-  color: var(--color-text-main);
-}
-
-.footer-credit a {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.footer-credit a:hover {
-  text-decoration: underline;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
   .footer-content {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
   }
 
-  .brand-col {
-    grid-column: span 2;
-  }
-}
-
-@media (max-width: 600px) {
-  .footer-content {
-    grid-template-columns: 1fr;
-    text-align: center;
+  /* Headings */
+  .footer-col h3 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-accent);
   }
 
-  .brand-col {
-    grid-column: span 1;
+  .footer-col h4 {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.25rem;
+    color: var(--color-accent-light);
   }
 
+  /* Links */
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-col ul li {
+    margin-bottom: 0.75rem;
+  }
+
+  .footer-col a {
+    color: var(--color-bg-offset);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-col a:hover {
+    color: var(--color-accent);
+  }
+
+  /* Brand text */
+  .brand-col p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .copyright {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Contact */
+  address {
+    font-style: normal;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  /* Social */
   .social-links {
-    justify-content: center;
+    display: flex;
+    gap: 1rem;
   }
-}
+
+  .social-links a {
+    color: var(--color-text-muted);
+    transition: all 0.2s;
+  }
+
+  .social-links a:hover {
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  /* Footer credit */
+  .footer-credit {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.7rem;
+    color: var(--color-text-main);
+  }
+
+  .footer-credit a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .footer-credit a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .footer-content {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .brand-col {
+      grid-column: span 2;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .footer-content {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .brand-col {
+      grid-column: span 1;
+    }
+
+    .social-links {
+      justify-content: center;
+    }
+  }
 </style>
