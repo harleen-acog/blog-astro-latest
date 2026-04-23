@@ -48,6 +48,20 @@ const user = { name: username, username };
             )
           }
         </div>
+        {
+          post.data.cover && (
+            <div class="post-hero">
+              <img
+                src={
+                  typeof post.data.cover === "string"
+                    ? post.data.cover
+                    : post.data.cover.src
+                }
+                alt={post.data.coverAlt || post.data.title}
+              />
+            </div>
+          )
+        }
         <div class="prose">
           <slot />
         </div>
