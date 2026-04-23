@@ -1,11 +1,7 @@
 ---
 import {
-  CONTACT,
   CV_URL,
-  FOOTER_CREDIT,
-  SITE_DESCRIPTION,
-  SITE_TITLE,
-  SOCIAL_LINKS,
+
 } from '../consts';
 import { url } from '../utils/paths';
 
@@ -27,24 +23,6 @@ const cvHref = CV_URL ? url(CV_URL) : null;
         
       </ul>
     </nav>
-
-   
-
-    <!-- Social -->
-    <div class="footer-col">
-      <div class="social-links">
-        {SOCIAL_LINKS.map(link => (
-          <a
-            href={link.href}
-            target={link.href.startsWith('mailto:') ? undefined : '_blank'}
-            rel={link.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
-            aria-label={link.label}
-          >
-            <span set:html={link.iconSvg} />
-          </a>
-        ))}
-      </div>
-    </div>
 
   </div>
 
