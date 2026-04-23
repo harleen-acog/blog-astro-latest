@@ -1,5 +1,5 @@
 ---
-title: "Hello World"
+title: "Hello World 2"
 date: 2026-04-21
 description: "My first post using Astro Content Collections and GitHub as a CMS"
 tags: ["astro", "blog", "intro"]
