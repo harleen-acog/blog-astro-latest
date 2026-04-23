@@ -5,6 +5,8 @@ description: "sunny weather"
 tags: ["fun"]
 draft: false
 contributors: ["swati-acog", "rajat-acog"]
+cover: "./images/summar_vacation.jpg"
+coverAlt: "Sunny beach vacation with clear sky and ocean view"
 ---
 
 ## Welcome
