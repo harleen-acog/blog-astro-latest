@@ -49,15 +49,15 @@ const user = { name: username, username };
           }
         </div>
         {
-          post.data.cover && (
+          post.cover && (
             <div class="post-hero">
               <img
                 src={
-                  typeof post.data.cover === "string"
-                    ? post.data.cover
-                    : post.data.cover.src
+                  typeof post.cover === "string"
+                    ? post.cover
+                    : post.cover.src
                 }
-                alt={post.data.coverAlt || post.data.title}
+                alt={post.coverAlt || post.title}
               />
             </div>
           )
@@ -113,6 +113,14 @@ const user = { name: username, username };
     max-width: 100%;
     border-radius: 10px;
   }
+img, .prose :global(p img) {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  margin: 20px 0px;
+  max-height: 25rem;
+  object-fit: cover
+}
 
   .prose code {
     background: var(--color-bg-offset);

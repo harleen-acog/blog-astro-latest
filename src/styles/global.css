@@ -10,7 +10,7 @@
 	/* --- LIGHT THEME (Default) --- */
 	--color-bg: #fbfbfb;
 	--color-bg-offset: #ffffff;
-	--color-bg-header: rgba(248, 247, 244, 0.9);
+	--color-bg-header: rgb(248, 247, 244);
 	--color-text-main: #111111;
 	--color-text-muted: #666666;
 	--color-accent: #003366;
@@ -519,21 +519,11 @@ a:hover {
 	text-transform: uppercase;
 }
 
-/* =====================
-   Project Card
-   ===================== */
-.project-card {
-	background-color: var(--color-bg-offset);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius);
-	padding: 1.25rem 1.5rem;
-	transition: box-shadow var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
-}
 
-.project-card:hover {
-	box-shadow: var(--shadow-md);
-	transform: translateY(-2px);
-	border-color: var(--color-accent);
+.prose :global(img) {
+  width: 100%;
+  border-radius: 8px;
+  margin: 1.5rem 0;
 }
 
 /* =====================
