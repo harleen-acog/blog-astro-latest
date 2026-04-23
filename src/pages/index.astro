@@ -4,6 +4,7 @@ import { url } from "../utils/paths";
 import "../styles/global.css";
 import Search from "../components/Search.astro";
 import { getCollection } from "astro:content";
+import MainHeader from "../components/MainHeader.astro";
 
 //exclude the drafts
 const allPosts = await getCollection("posts", ({ data }) => !data.draft);
@@ -28,6 +29,7 @@ const latestPosts = allPosts
 ---
 
 <Layout title="Home">
+  <MainHeader slot="Main-Header"/>
   <section class="hero" slot="Hero-Section">
     <div class="hero-overlay">
       <h1>Insights & Ideas</h1>
@@ -41,7 +43,6 @@ const latestPosts = allPosts
       <h2>Latest Posts</h2>
       <a href="/authors" class="view-all">See Authors →</a>
     </div>
-    <Search />
 
     {
       latestPosts.length === 0 ? (
@@ -64,7 +65,6 @@ const latestPosts = allPosts
                         class="cover-img"
                       />
                     ) : (
-                      // Astro image (optimized)
                       <img
                         src={post.cover.src}
                         width={post.cover.width}
@@ -143,9 +143,9 @@ const latestPosts = allPosts
   .post-grid {
     display: grid;
     gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
-  
+
   .post-card {
     border: 1px solid var(--color-border);
     border-radius: 10px;

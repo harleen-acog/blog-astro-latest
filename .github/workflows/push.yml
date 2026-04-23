@@ -198,20 +198,20 @@ jobs:
             git push origin main
           fi
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: setup-user
+  # build:
+  #   name: Build
+  #   runs-on: ubuntu-latest
+  #   needs: setup-user
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         ref: main
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '22'
+  #         cache: 'npm'
 
-      - run: npm ci
-      - run: npx astro build
+  #     - run: npm ci
+  #     - run: npx astro build

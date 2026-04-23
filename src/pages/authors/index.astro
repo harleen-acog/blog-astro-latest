@@ -3,6 +3,7 @@
 // Lists all authors derived from post folders
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import MainHeader from '../../components/MainHeader.astro';
 
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const allAuthors = await getCollection('authors');
@@ -36,6 +37,7 @@ const authors = usernames.map((username) => {
 ---
 
 <Layout title="Authors" description="All authors on this blog">
+  <MainHeader slot="Main-Header"/>
 
   <section class="authors-page">
 

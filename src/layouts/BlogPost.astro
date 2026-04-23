@@ -23,7 +23,7 @@ const user = { name: username, username };
         data-pagefind-meta={`title:${post.title}`}
       >
         <div class="title">
-          <div class="date">
+          <div class="date" data-pagefind-sort={`date:${post.date.toISOString()}`}>
             {post.date.toLocaleDateString()}
           </div>
           <h1>{post.title}</h1>
@@ -32,7 +32,7 @@ const user = { name: username, username };
             {
               post.contributors.map((c, i) => (
                 <>
-                  <a href={`/${c}`}>{c}</a>
+                  <a data-pagefind-filter="author" href={`/${c}`}>{c}</a>
                   {i < post.contributors.length - 1 && " | "}
                 </>
               ))

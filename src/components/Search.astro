@@ -10,10 +10,9 @@
 
 <link href="/_pagefind/pagefind-ui.css" rel="stylesheet" />
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener("DOMContentLoaded", () => {
     if (typeof window === "undefined") return;
 
-    
     const script = document.createElement("script");
     script.src = "/pagefind/pagefind-ui.js";
     script.defer = true;
@@ -42,8 +41,93 @@
 
 <style>
   #search-wrapper {
+    position: relative;
     max-width: 600px;
     margin: 0 auto 2rem auto;
+  }
+
+  #search :global(.pagefind-ui__drawer) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+
+    background: var(--color-bg-offset);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+
+    margin-top: 8px;
+    padding: 1rem;
+
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    height: 84vh;
+  }
+
+  #search :global(.pagefind-ui__results-area) {
+    max-height: 400px;
+    overflow-y: auto;
+    height:;
+  }
+
+  #search :global(.pagefind-ui__result) {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  #search :global(.pagefind-ui__result:last-child) {
+    border-bottom: none;
+  }
+
+  #search :global(.pagefind-ui__result-title a) {
+    text-decoration: none;
+    color: var(--color-text-main);
+    font-weight: 600;
+  }
+
+  #search :global(.pagefind-ui__result-title a:hover) {
+    color: var(--color-accent);
+  }
+
+  #search :global(.pagefind-ui__result-excerpt) {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  #search :global(.pagefind-ui__message) {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted);
+  }
+
+  #search :global(.pagefind-ui__filter-panel) {
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--color-border);
+  }
+
+  #search :global(.pagefind-ui__filter-name) {
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #search :global(.pagefind-ui__filter-value) {
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+  }
+
+  #search :global(.pagefind-ui__button) {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  #search :global(.pagefind-ui__button:hover) {
+    background: var(--color-bg-offset);
   }
 
   /* Map pagefind CSS vars to your theme vars */
@@ -52,7 +136,7 @@
     --pagefind-ui-text: var(--color-text-main);
     --pagefind-ui-background: var(--color-bg-offset);
     --pagefind-ui-border: var(--color-border);
-    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-border-radius: 23px;
     --pagefind-ui-font: var(--font-sans);
   }
 </style>

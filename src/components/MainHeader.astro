@@ -1,0 +1,101 @@
+---
+import Search from "./Search.astro";
+---
+
+<header class="main-header" data-pagefind-ignore>
+  <nav>
+    <!-- Left: Branding -->
+    <h2>
+      <a href="/">Aganitha</a>
+    </h2>
+    <div class="search-container">
+      <Search />
+    </div>
+    <!-- Right: Links + Search -->
+    <div class="right-section">
+      <div class="internal-links">
+        <a href="/authors">Authors</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .main-header {
+    padding: 0 1em;
+    background-color: var(--color-bg-header);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    height: 4.5rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.3em;
+  }
+
+  h2 a {
+    text-decoration: none;
+    color: var(--color-text-main);
+  }
+
+  /* RIGHT SIDE */
+  .right-section {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  /* LINKS */
+  .internal-links {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .internal-links a {
+    text-decoration: none;
+    color: var(--color-text-main);
+    font-weight: 500;
+  }
+
+  .internal-links a:hover {
+    color: var(--color-accent);
+  }
+
+  /* SEARCH */
+  .search-container {
+    display: flex;
+    align-items: center;
+    width:fit-content;
+  }
+  /* Make Pagefind input fit nicely */
+  .search-container :global(.pagefind-ui__search-input) {
+    width:50vw;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    padding-left: 45px;
+    margin-top:30px;
+    border-radius:120px;
+  }
+
+  .search-container :global(.pagefind-ui__search-clear){
+    border:none;
+    border-radius:120px;
+  }
+
+  @media (max-width: 768px) {
+    .search-container {
+      /* width: 180px; */
+    }
+  }
+</style>
