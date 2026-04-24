@@ -6,34 +6,72 @@
 
 <div id="search-wrapper">
   <div id="search"></div>
+  <!-- overlay layer (stable) -->
+  <!-- <div id="search-stable"></div> -->
 </div>
 
 <link href="/_pagefind/pagefind-ui.css" rel="stylesheet" />
 <script>
   window.addEventListener("DOMContentLoaded", () => {
-    if (typeof window === "undefined") return;
-
     const script = document.createElement("script");
     script.src = "/pagefind/pagefind-ui.js";
     script.defer = true;
 
     script.onload = () => {
-      // @ts-ignore
       new window.PagefindUI({
         element: "#search",
         showImages: false,
         excerptLength: 20,
         resetStyles: false,
+        minSearchLength: 2,
       });
     };
 
-    script.onerror = () => {
-      const el = document.getElementById("search");
-      if (el) {
-        el.innerHTML =
-          '<p style="color:var(--color-text-muted);font-size:0.85rem;">Search available after build</p>';
-      }
-    };
+    const waitForResults = setInterval(() => {
+      const input = document.querySelector(
+        "#search .pagefind-ui__search-input",
+      );
+      const results = document.querySelector(
+        "#search .pagefind-ui__results-area",
+      );
+      const stable = document.getElementById("search-stable");
+
+      if (!input || !results || !stable) return;
+
+      clearInterval(waitForResults);
+      console.log("Pagefind ready");
+
+      let lastHTML = "";
+
+      const observer = new MutationObserver(() => {
+        const hasResults = results.querySelector(".pagefind-ui__result");
+
+        console.log("observer fired");
+
+        if (hasResults) {
+          console.log(" has results");
+
+          lastHTML = results.innerHTML;
+          stable.innerHTML = lastHTML;
+
+          console.log("UPDATED HTML:", stable.innerHTML);
+
+          stable.classList.remove("active");
+        }
+      });
+
+      observer.observe(results, {
+        childList: true,
+        subtree: true,
+      });
+
+      input.addEventListener("input", () => {
+        if (lastHTML) {
+          stable.innerHTML = lastHTML;
+          stable.classList.add("active");
+        }
+      });
+    }, 100);
 
     document.body.appendChild(script);
   });
@@ -45,7 +83,19 @@
     max-width: 600px;
     margin: 0 auto 2rem auto;
   }
+  /* last results cont*/
+  #search-stable {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 998;
+    pointer-events: none;
+  }
 
+  #search-stable.active {
+    pointer-events: auto;
+  }
   #search :global(.pagefind-ui__drawer) {
     position: absolute;
     top: 100%;
@@ -63,15 +113,23 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
     height: 84vh;
-    overflow-y:hidden;
+    overflow-y: hidden;
   }
 
   #search :global(.pagefind-ui__results-area) {
     max-height: 400px;
     overflow-y: auto;
-    height:;
   }
 
+ 
+  #search :global(.pagefind-ui__search-input::placeholder) {
+    color: var(--color-border);
+    opacity: 1;
+    font-size: 0.9rem;
+  }
+  #search :global(.pagefind-ui__form:before) {
+    top: calc(17px * var(--pagefind-ui-scale));
+  }
   #search :global(.pagefind-ui__result) {
     padding: 0.75rem 0;
     border-bottom: 1px solid var(--color-border);

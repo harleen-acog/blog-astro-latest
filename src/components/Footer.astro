@@ -104,29 +104,7 @@ const cvHref = CV_URL ? url(CV_URL) : null;
     color: var(--color-text-muted);
   }
 
-  /* Contact */
-  address {
-    font-style: normal;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--color-text-muted);
-  }
 
-  /* Social */
-  .social-links {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .social-links a {
-    color: var(--color-text-muted);
-    transition: all 0.2s;
-  }
-
-  .social-links a:hover {
-    color: var(--color-accent);
-    transform: translateY(-2px);
-  }
 
   /* Footer credit */
   .footer-credit {
@@ -154,23 +132,13 @@ const cvHref = CV_URL ? url(CV_URL) : null;
       gap: 2rem;
     }
 
-    .brand-col {
-      grid-column: span 2;
-    }
+    
   }
 
   @media (max-width: 600px) {
     .footer-content {
       grid-template-columns: 1fr;
       text-align: center;
-    }
-
-    .brand-col {
-      grid-column: span 1;
-    }
-
-    .social-links {
-      justify-content: center;
     }
   }
 </style>

@@ -75,23 +75,41 @@ import Search from "./Search.astro";
   .search-container {
     display: flex;
     align-items: center;
-    width:fit-content;
+    width: fit-content;
   }
   /* Make Pagefind input fit nicely */
   .search-container :global(.pagefind-ui__search-input) {
-    width:50vw;
+    width: 50vw;
     border-radius: 8px;
     border: 1px solid var(--color-border);
     font-size: 0.9rem;
     padding-left: 45px;
-    margin-top:30px;
-    border-radius:120px;
+    margin-top: 30px;
+    border-radius: 120px;
+    height: calc(50px * var(--pagefind-ui-scale));
+    outline:none;
   }
 
-  .search-container :global(.pagefind-ui__search-clear){
-    border:none;
-    border-radius:120px;
+  /* Focus state */
+.search-container :global(.pagefind-ui__search-input:focus) {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05); /* subtle glow */
+  outline: none;
+}
+
+/*  Placeholder styling */
+.search-container :global(.pagefind-ui__search-input::placeholder) {
+  color: #3a3a3a;
+  opacity: 1; /* prevents browser dimming */
+  font-size: 0.85rem;
+}
+
+  .search-container :global(.pagefind-ui__search-clear) {
+    border: none;
+    border-radius: 120px;
+    height: calc(46px * var(--pagefind-ui-scale));
   }
+
 
   @media (max-width: 768px) {
     .search-container {
