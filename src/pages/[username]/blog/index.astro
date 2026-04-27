@@ -65,7 +65,7 @@ const user = { name: username, username };
         <div class="posts-grid" id="posts">
           {posts.map((post) => (
             <a
-              href={`/blog/${post.slug}`}
+              href={`/${username}/blog/${post.slug}`}
               class="post-card"
               data-title={post.title.toLowerCase()}
               data-excerpt={(post.description|| '').toLowerCase()}
