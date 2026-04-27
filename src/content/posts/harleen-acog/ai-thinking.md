@@ -9,7 +9,7 @@ draft: false
 
 ## Introduction
 
-Artificial Intelligence is no longer just about automation or chatbots.  
+Artificial Intelligence is no longer just about automation.  
 It’s increasingly being used to solve real scientific problems — from drug discovery to climate modeling.
 
 ## AI as a Scientific Tool
