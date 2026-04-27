@@ -13,7 +13,7 @@ const { posts, username } = Astro.props;
   <div class="post-list">
     {posts.map((post) => (
       <article class="post-card">
-        <a href={`${username}/blog/${post.slug}`} class="post-link">
+        <a href={`/${username}/blog/${post.slug}`} class="post-link">
           <h3>{post.title}</h3>
         </a>
 
