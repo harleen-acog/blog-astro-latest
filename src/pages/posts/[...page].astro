@@ -1,0 +1,241 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import "../../styles/global.css";
+import MainHeader from "../../components/MainHeader.astro";
+
+export async function getStaticPaths({ paginate }) {
+  const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+
+  const latestPosts = allPosts
+    .map((entry) => {
+      const [username, slug] = entry.id.split("/");
+
+      return {
+        username,
+        slug,
+        title: entry.data.title,
+        description: entry.data.description,
+        date: entry.data.date,
+        tags: entry.data.tags,
+        cover: entry.data.cover,
+        coverAlt: entry.data.coverAlt,
+      };
+    })
+    .sort((a, b) => b.date.valueOf() - a.date.valueOf());
+
+  return paginate(latestPosts, { pageSize: 9 });
+}
+
+const { page } = Astro.props;
+---
+
+<Layout title="All Posts">
+  <MainHeader slot="Main-Header" />
+
+  <section class="section">
+    <div class="section-header">
+      <h2>All Posts</h2>
+    </div>
+
+    {
+      page.data.length === 0 ? (
+        <p>No posts yet.</p>
+      ) : (
+        <div class="post-grid">
+          {page.data.map((post) => (
+            <article class="post-card">
+              <a href={`/${post.username}/blog/${post.slug}`} class="cover-link">
+                {post.cover ? (
+                  typeof post.cover === "string" ? (
+                    <img
+                      src={post.cover}
+                      alt={post.coverAlt || post.title}
+                      class="cover-img"
+                    />
+                  ) : (
+                    <img
+                      src={post.cover.src}
+                      width={post.cover.width}
+                      height={post.cover.height}
+                      alt={post.coverAlt || post.title}
+                      class="cover-img"
+                    />
+                  )
+                ) : (
+                  <div class="cover-fallback">
+                    <span>{post.title}</span>
+                  </div>
+                )}
+              </a>
+
+              <div class="post-content">
+                <a
+                  href={`/${post.username}/blog/${post.slug}`}
+                  class="post-title"
+                >
+                  {post.title}
+                </a>
+
+                <div class="post-meta">
+                  <span class="meta-author">{post.username}</span>
+                  <span class="meta-sep">·</span>
+                  <span>{post.date.toLocaleDateString()}</span>
+                </div>
+
+                {post.description && (
+                  <p class="post-desc">{post.description}</p>
+                )}
+
+                {post.tags?.length > 0 && (
+                  <div class="tags">
+                    {post.tags.map((tag) => (
+                      <span class="tag">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
+
+    <!-- Pagination -->
+    <nav class="pagination">
+      {page.url.prev ? (
+        <a class="pagination-link" href={page.url.prev}>
+          ← Prev
+        </a>
+      ) : (
+        <span class="pagination-link disabled">← Prev</span>
+      )}
+
+      {page.url.next ? (
+        <a class="pagination-link" href={page.url.next}>
+          Next →
+        </a>
+      ) : (
+        <span class="pagination-link disabled">Next →</span>
+      )}
+    </nav>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--color-accent);
+  }
+
+  .post-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .post-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background-color: var(--color-bg-offset);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .cover-img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+  }
+
+  .cover-fallback {
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-accent), #6b7280);
+    color: white;
+    font-weight: 600;
+  }
+
+  .post-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .post-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--color-text-main);
+  }
+
+  .post-meta {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .meta-author {
+    color: var(--color-accent);
+  }
+
+  .post-desc {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    overflow: hidden;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .pagination-link {
+    font-size: 0.9rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .pagination-link:hover {
+    text-decoration: underline;
+  }
+
+  .disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+</style>
