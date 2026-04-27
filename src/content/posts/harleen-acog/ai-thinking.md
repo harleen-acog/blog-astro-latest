@@ -5,6 +5,8 @@ description: "Exploring how AI is transforming the way we approach scientific di
 tags: ["ai", "science", "research"]
 contributors: ["harleen-acog"]
 draft: false
+cover: "https://images.unsplash.com/photo-1555255707-c07966088b7b?q=80&w=1600&auto=format&fit=crop"
+coverAlt: "Artificial intelligence neural network visualization representing scientific analysis"
 ---
 
 ## Introduction
