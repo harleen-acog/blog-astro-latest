@@ -12,27 +12,9 @@ draft: false
 Artificial Intelligence is no longer just about automation.  
 It’s increasingly being used to solve real scientific problems from drug discovery to climate modeling.
 
-## AI as a Scientific Tool
-
-Traditionally, science follows a process:
-1. Form a hypothesis  
-2. Run experiments  
-3. Analyze results  
-
-AI is now accelerating every step of this pipeline.
-
-- It can **analyze massive datasets** in seconds  
-- It can **identify patterns humans might miss**  
-- It can even **suggest new hypotheses**
-
-## Real-World Applications
-
-Some areas where AI is making a big impact:
-
-- 🧬 Drug discovery  
-- 🌍 Climate prediction  
-- 🔬 Protein structure analysis  
-- 🚀 Space research  
+```js
+console.log("hi")
+```
 
 For example, models like DeepMind’s AlphaFold have revolutionized how scientists understand proteins.
 
