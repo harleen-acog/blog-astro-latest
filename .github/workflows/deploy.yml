@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  # trigger 1 — non-post pushes (components, config, styles etc.)
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'src/content/posts/**'
+
+  # trigger 2 — after Push Handler completes for post pushes
+  workflow_run:
+    workflows: ["Push Handler"]   # must match name: in push.yml exactly
+    types:
+      - completed
+
+jobs:
+  docker:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    # for workflow_run trigger — only deploy if Push Handler succeeded
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main    # always use final state after all bot fixes
+
+      - name: Login to private registry
+        run: |
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} \
+            -u "${{ secrets.REGISTRY_USERNAME }}" \
+            --password-stdin
+
+      - name: Build & push image
+        run: |
+          IMAGE="${{ secrets.REGISTRY_URL }}/blog_hk/blog-astro:latest"
+          docker build -t $IMAGE .
+          docker push $IMAGE
+
+  deploy:
+    name: Deploy on Server
+    runs-on: ubuntu-latest
+    needs: docker
+    if: always() && needs.docker.result == 'success'
+
+    steps:
+      - name: SSH into server and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/blog-astro             # folder with docker-compose.yml on server
+            docker compose pull         # pulls new image from private registry
+            docker compose up -d        # restarts container with new image
+            echo "✅ Deployed successfully"
