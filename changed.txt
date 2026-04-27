@@ -1,1 +1,1 @@
-M	src/content/posts/swati-acog/blog.md
+A	src/content/posts/anant-acog/hello.md
