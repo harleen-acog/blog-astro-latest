@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_clean: ${{ steps.check.outputs.is_clean }}
-      is_new_user: ${{ steps.check.outputs.is_new_user }}
+      is_new_user: ${{ steps.check.outputs.is_new_user }}   # ← new output
 
     steps:
       - uses: actions/checkout@v4
@@ -156,6 +156,7 @@ jobs:
           ACTOR="${{ github.actor }}"
           AUTHORS_DIR="src/content/authors"
           CODEOWNERS=".github/CODEOWNERS"
+          CHANGED=false
 
           mkdir -p "$AUTHORS_DIR"
 
@@ -200,10 +201,11 @@ jobs:
           git pull --rebase origin main
           git push origin main
 
-  docker:
-    name: Build & Push Docker Image
+  deploy:
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: [ownership-check, setup-user]
+    # runs when is_clean AND either setup-user ran (new user) or was skipped (existing user)
     if: |
       always() &&
       needs.ownership-check.outputs.is_clean == 'true' &&
@@ -212,36 +214,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main    # always use final state after all bot fixes
+          ref: main    # always deploy final state after all bot fixes
 
-      - name: Login to private registry
-        run: |
-          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} \
-            -u "${{ secrets.REGISTRY_USERNAME }}" \
-            --password-stdin
-
-      - name: Build & push image
-        run: |
-          IMAGE="${{ secrets.REGISTRY_URL }}/blog_hk/blog-astro:latest"
-          docker build -t $IMAGE .
-          docker push $IMAGE
-
-  deploy:
-    name: Deploy on Server
-    runs-on: ubuntu-latest
-    needs: docker
-
-    steps:
-      - name: SSH into server and deploy
-        uses: appleboy/ssh-action@v1.0.3
+      - uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd ~/blog-astro                                      # folder with docker-compose.yml on server
+          node-version: '22'
+          cache: 'npm'
 
-            docker compose pull                                  # pulls new image from private registry
-            docker compose up -d                                 # restarts container with new image
+      - name: Build check
+        run: |
+          npm ci
+          npx astro build
 
-            echo "✅ Deployed successfully"
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
