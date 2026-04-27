@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_clean: ${{ steps.check.outputs.is_clean }}
+      is_new_user: ${{ steps.check.outputs.is_new_user }}   # ← new output
 
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +37,14 @@ jobs:
 
           IS_CLEAN=true
           AUTO_FIXED=false
+
+          # check if this is a new user BEFORE anything else
+          PROFILE_FILE="src/content/authors/${ACTOR}.json"
+          if [ ! -f "$PROFILE_FILE" ]; then
+            echo "is_new_user=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_new_user=false" >> $GITHUB_OUTPUT
+          fi
 
           while read STATUS file; do
             [ -z "$file" ] && continue
@@ -131,7 +140,10 @@ jobs:
     name: Setup User
     runs-on: ubuntu-latest
     needs: ownership-check
-    if: needs.ownership-check.outputs.is_clean == 'true'
+    # only runs for new users — skipped entirely for existing users
+    if: |
+      needs.ownership-check.outputs.is_clean == 'true' &&
+      needs.ownership-check.outputs.is_new_user == 'true'
 
     steps:
       - uses: actions/checkout@v4
@@ -152,66 +164,73 @@ jobs:
           POSTS_DIR="src/content/posts/${ACTOR}"
           IMAGES_DIR="${POSTS_DIR}/images"
 
-          if [ ! -f "$PROFILE_FILE" ]; then
-            DATA=$(curl -s \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/users/${ACTOR}")
+          DATA=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/users/${ACTOR}")
 
-            NAME=$(echo "$DATA" | jq -r '.name // .login')
-            LOGIN=$(echo "$DATA" | jq -r '.login')
-            AVATAR=$(echo "$DATA" | jq -r '.avatar_url')
-            BIO=$(echo "$DATA" | jq -r '.bio // ""')
+          NAME=$(echo "$DATA" | jq -r '.name // .login')
+          LOGIN=$(echo "$DATA" | jq -r '.login')
+          AVATAR=$(echo "$DATA" | jq -r '.avatar_url')
+          BIO=$(echo "$DATA" | jq -r '.bio // ""')
 
-            jq -n \
-              --arg name "$NAME" \
-              --arg login "$LOGIN" \
-              --arg avatar "$AVATAR" \
-              --arg bio "$BIO" \
-              '{
-                name: $name,
-                login: $login,
-                avatar_url: $avatar,
-                bio: $bio
-              }' > "$PROFILE_FILE"
+          jq -n \
+            --arg name "$NAME" \
+            --arg login "$LOGIN" \
+            --arg avatar "$AVATAR" \
+            --arg bio "$BIO" \
+            '{
+              name: $name,
+              login: $login,
+              avatar_url: $avatar,
+              bio: $bio
+            }' > "$PROFILE_FILE"
 
-            # create posts + images folder for the new user
-            mkdir -p "$IMAGES_DIR"
-            touch "$IMAGES_DIR/.gitkeep"
+          # create posts + images folder for the new user
+          mkdir -p "$IMAGES_DIR"
+          touch "$IMAGES_DIR/.gitkeep"
 
-            CHANGED=true
-          fi
+          echo "src/content/posts/${ACTOR}/*    @${ACTOR}" >> "$CODEOWNERS"
 
-          if ! grep -q "@${ACTOR}" "$CODEOWNERS" 2>/dev/null; then
-            echo "src/content/posts/${ACTOR}/*    @${ACTOR}" >> "$CODEOWNERS"
-            CHANGED=true
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          if [ "$CHANGED" = true ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "auto: setup @${ACTOR} [skip ci]"
 
-            git add .
-            git diff --staged --quiet || git commit -m "auto: setup @${ACTOR} [skip ci]"
+          git pull --rebase origin main
+          git push origin main
 
-            git pull --rebase origin main
-            git push origin main
-          fi
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [ownership-check, setup-user]
+    # runs when is_clean AND either setup-user ran (new user) or was skipped (existing user)
+    if: |
+      always() &&
+      needs.ownership-check.outputs.is_clean == 'true' &&
+      (needs.setup-user.result == 'success' || needs.setup-user.result == 'skipped')
 
-  # build:
-  #   name: Build
-  #   runs-on: ubuntu-latest
-  #   needs: setup-user
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main    # always deploy final state after all bot fixes
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '22'
-  #         cache: 'npm'
+      - name: Build check
+        run: |
+          npm ci
+          npx astro build
 
-  #     - run: npm ci
-  #     - run: npx astro build
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

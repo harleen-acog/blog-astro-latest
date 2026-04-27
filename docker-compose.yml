@@ -1,0 +1,7 @@
+services:
+  blog:
+    image: harleenacog/blog-astro:latest
+    container_name: blog-astro
+    ports:
+      - "80:80"
+    restart: always
