@@ -33,7 +33,7 @@ const { page } = Astro.props;
 <Layout title="All Posts">
   <MainHeader slot="Main-Header" />
 
-  <section class="section">
+  <section class="section" style="border:none">
     <div class="section-header">
       <h2>All Posts</h2>
     </div>
@@ -45,7 +45,10 @@ const { page } = Astro.props;
         <div class="post-grid">
           {page.data.map((post) => (
             <article class="post-card">
-              <a href={`/${post.username}/blog/${post.slug}`} class="cover-link">
+              <a
+                href={`/${post.username}/blog/${post.slug}`}
+                class="cover-link"
+              >
                 {post.cover ? (
                   typeof post.cover === "string" ? (
                     <img
@@ -103,21 +106,25 @@ const { page } = Astro.props;
 
     <!-- Pagination -->
     <nav class="pagination">
-      {page.url.prev ? (
-        <a class="pagination-link" href={page.url.prev}>
-          ← Prev
-        </a>
-      ) : (
-        <span class="pagination-link disabled">← Prev</span>
-      )}
+      {
+        page.url.prev ? (
+          <a class="pagination-link" href={page.url.prev}>
+            ← Prev
+          </a>
+        ) : (
+          <span class="pagination-link disabled">← Prev</span>
+        )
+      }
 
-      {page.url.next ? (
-        <a class="pagination-link" href={page.url.next}>
-          Next →
-        </a>
-      ) : (
-        <span class="pagination-link disabled">Next →</span>
-      )}
+      {
+        page.url.next ? (
+          <a class="pagination-link" href={page.url.next}>
+            Next →
+          </a>
+        ) : (
+          <span class="pagination-link disabled">Next →</span>
+        )
+      }
     </nav>
   </section>
 </Layout>
@@ -137,6 +144,11 @@ const { page } = Astro.props;
     padding-bottom: 0.4rem;
     border-bottom: 2px solid var(--color-accent);
   }
+  .section-header h2 {
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+  }
 
   .post-grid {
     display: grid;
@@ -152,7 +164,9 @@ const { page } = Astro.props;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
   }
 
   .post-card:hover {
