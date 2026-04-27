@@ -1,7 +1,12 @@
 services:
   blog:
-    image: harleenacog/blog-astro:latest
+    image: dockerhub.aganitha.ai:4443/blog_hk/blog-astro:latest
     container_name: blog-astro
     ports:
-      - "80:80"
-    restart: always
+      - "8080:80"
+    restart: unless-stopped
+
+    labels:
+      - user=harleen
+      - description="Astro blog"
+      - security=none
